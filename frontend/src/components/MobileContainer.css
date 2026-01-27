@@ -1,0 +1,32 @@
+/* Mobile Container Styles */
+.mobile-wrapper {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #1a1a1a;
+    /* Dark background for desktop outer area */
+}
+
+.mobile-container {
+    width: 100%;
+    max-width: 480px;
+    /* Mobile width constraint */
+    height: 100%;
+    max-height: 900px;
+    /* Reasonable max height for desktop view */
+    background-color: #000;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+}
+
+/* Ensure full height on actual mobile devices */
+@media (max-width: 480px) {
+    .mobile-container {
+        max-height: 100vh;
+    }
+}

@@ -1,0 +1,827 @@
+[
+    {
+        "skill_id": "basic_slash",
+        "name_jp": "ベーシックスラッシュ",
+        "name_en": "Basic Slash",
+        "description": "すべての剣技の起点となる基本斬撃。",
+        "base_power": 80,
+        "attribute": "斬",
+        "system": "剣技",
+        "mp_cost": 2,
+        "bp_cost": 2,
+        "target": "単体",
+        "inspiration_source": [],
+        "chain_compatibility": {
+            "next_attribute_bonus": "突",
+            "chain_bonus_rate": 1.2
+        },
+        "combo": {
+            "send_tags": [
+                "Move"
+            ],
+            "receive_tags": [
+                "Move",
+                "Down"
+            ],
+            "never_combo": false,
+            "interrupts_chain": false,
+            "combo_weight": 1.0,
+            "combo_role": "starter",
+            "max_combo_depth": 1
+        },
+        "cooldown_turns": 0,
+        "charges": {
+            "max": 0,
+            "start": 0,
+            "regen_interval_turns": 0
+        },
+        "stance": {
+            "enter": "none",
+            "exit": "none",
+            "lock_turns": 0,
+            "shift_bp_cost": 0
+        },
+        "repeat_penalty": {
+            "same_skill_decay": [
+                1,
+                0.85,
+                0.7
+            ],
+            "same_attribute_decay": [
+                1,
+                0.9,
+                0.8
+            ],
+            "reset_after_turns": 2
+        },
+        "spark": {
+            "is_provisional_on_learn": false,
+            "provisional_uses_per_battle": 0,
+            "stabilize": {
+                "condition": "use_total",
+                "value": 0
+            }
+        },
+        "timing": {
+            "fast_bonus": 0,
+            "delay_penalty": 0
+        },
+        "ai_tags": [
+            "starter",
+            "chain_builder"
+        ],
+        "visual_effect_instruction": "白い斬線が高速で走る。",
+        "sound_effect_instruction": "軽い金属スラッシュ音。"
+    },
+    {
+        "skill_id": "basic_punch",
+        "name_jp": "ベーシックパンチ",
+        "name_en": "Basic Punch",
+        "description": "体術連携の起点となる直線打撃。",
+        "base_power": 75,
+        "attribute": "打",
+        "system": "拳法",
+        "mp_cost": 2,
+        "bp_cost": 2,
+        "target": "単体",
+        "inspiration_source": [],
+        "chain_compatibility": {
+            "next_attribute_bonus": "雷",
+            "chain_bonus_rate": 1.2
+        },
+        "combo": {
+            "send_tags": [
+                "Down"
+            ],
+            "receive_tags": [
+                "Move",
+                "Down"
+            ],
+            "never_combo": false,
+            "interrupts_chain": false,
+            "combo_weight": 1.0,
+            "combo_role": "starter",
+            "max_combo_depth": 1
+        },
+        "cooldown_turns": 0,
+        "charges": {
+            "max": 0,
+            "start": 0,
+            "regen_interval_turns": 0
+        },
+        "stance": {
+            "enter": "none",
+            "exit": "none",
+            "lock_turns": 0,
+            "shift_bp_cost": 0
+        },
+        "repeat_penalty": {
+            "same_skill_decay": [
+                1,
+                0.85,
+                0.7
+            ],
+            "same_attribute_decay": [
+                1,
+                0.9,
+                0.8
+            ],
+            "reset_after_turns": 2
+        },
+        "spark": {
+            "is_provisional_on_learn": false,
+            "provisional_uses_per_battle": 0,
+            "stabilize": {
+                "condition": "use_total",
+                "value": 0
+            }
+        },
+        "timing": {
+            "fast_bonus": 1,
+            "delay_penalty": 0
+        },
+        "ai_tags": [
+            "starter",
+            "chain_builder"
+        ],
+        "visual_effect_instruction": "拳の残像が短く残る。",
+        "sound_effect_instruction": "乾いた打撃音。"
+    },
+    {
+        "skill_id": "basic_fire",
+        "name_jp": "ベーシックファイア",
+        "name_en": "Basic Fire",
+        "description": "火術連携の起点となる小火球。",
+        "base_power": 85,
+        "attribute": "火",
+        "system": "術法",
+        "mp_cost": 3,
+        "bp_cost": 3,
+        "target": "単体",
+        "inspiration_source": [],
+        "chain_compatibility": {
+            "next_attribute_bonus": "風",
+            "chain_bonus_rate": 1.25
+        },
+        "combo": {
+            "send_tags": [
+                "Hot"
+            ],
+            "receive_tags": [
+                "Hot",
+                "Move"
+            ],
+            "never_combo": false,
+            "interrupts_chain": false,
+            "combo_weight": 1.0,
+            "combo_role": "starter",
+            "max_combo_depth": 1
+        },
+        "cooldown_turns": 0,
+        "charges": {
+            "max": 0,
+            "start": 0,
+            "regen_interval_turns": 0
+        },
+        "stance": {
+            "enter": "none",
+            "exit": "none",
+            "lock_turns": 0,
+            "shift_bp_cost": 0
+        },
+        "repeat_penalty": {
+            "same_skill_decay": [
+                1,
+                0.85,
+                0.7
+            ],
+            "same_attribute_decay": [
+                1,
+                0.9,
+                0.8
+            ],
+            "reset_after_turns": 2
+        },
+        "spark": {
+            "is_provisional_on_learn": false,
+            "provisional_uses_per_battle": 0,
+            "stabilize": {
+                "condition": "use_total",
+                "value": 0
+            }
+        },
+        "timing": {
+            "fast_bonus": 0,
+            "delay_penalty": 0
+        },
+        "ai_tags": [
+            "starter",
+            "chain_builder"
+        ],
+        "visual_effect_instruction": "小さな火球が直進する。",
+        "sound_effect_instruction": "点火音と小爆発。"
+    },
+    {
+        "skill_id": "slash_double_cut",
+        "name_jp": "二段斬り",
+        "name_en": "Double Cut",
+        "description": "素早く二度斬りつける基本派生。",
+        "base_power": 120,
+        "attribute": "斬",
+        "system": "剣技",
+        "mp_cost": 5,
+        "bp_cost": 4,
+        "target": "単体",
+        "inspiration_source": [
+            "basic_slash"
+        ],
+        "chain_compatibility": {
+            "next_attribute_bonus": "斬",
+            "chain_bonus_rate": 1.3
+        },
+        "combo": {
+            "send_tags": [
+                "Move",
+                "Down"
+            ],
+            "receive_tags": [
+                "Move"
+            ],
+            "never_combo": false,
+            "interrupts_chain": false,
+            "combo_weight": 1.1,
+            "combo_role": "connector",
+            "max_combo_depth": 3
+        },
+        "cooldown_turns": 1,
+        "charges": {
+            "max": 0,
+            "start": 0,
+            "regen_interval_turns": 0
+        },
+        "stance": {
+            "enter": "none",
+            "exit": "none",
+            "lock_turns": 0,
+            "shift_bp_cost": 0
+        },
+        "repeat_penalty": {
+            "same_skill_decay": [
+                1,
+                0.8,
+                0.6
+            ],
+            "same_attribute_decay": [
+                1,
+                0.85,
+                0.7
+            ],
+            "reset_after_turns": 2
+        },
+        "spark": {
+            "is_provisional_on_learn": false,
+            "provisional_uses_per_battle": 0,
+            "stabilize": {
+                "condition": "use_total",
+                "value": 0
+            }
+        },
+        "timing": {
+            "fast_bonus": 0,
+            "delay_penalty": 0
+        },
+        "ai_tags": [
+            "chain_builder"
+        ],
+        "visual_effect_instruction": "斬線が二本連続で走る。",
+        "sound_effect_instruction": "金属音二連。"
+    },
+    {
+        "skill_id": "slash_cross",
+        "name_jp": "十字斬",
+        "name_en": "Cross Slash",
+        "description": "交差する二閃で確実に切り裂く。",
+        "base_power": 135,
+        "attribute": "斬",
+        "system": "剣技",
+        "mp_cost": 6,
+        "bp_cost": 5,
+        "target": "単体",
+        "inspiration_source": [
+            "slash_double_cut"
+        ],
+        "chain_compatibility": {
+            "next_attribute_bonus": "突",
+            "chain_bonus_rate": 1.35
+        },
+        "combo": {
+            "send_tags": [
+                "Down"
+            ],
+            "receive_tags": [
+                "Move",
+                "InstantStop"
+            ],
+            "never_combo": false,
+            "interrupts_chain": false,
+            "combo_weight": 1.15,
+            "combo_role": "connector",
+            "max_combo_depth": 4
+        },
+        "cooldown_turns": 1,
+        "charges": {
+            "max": 0,
+            "start": 0,
+            "regen_interval_turns": 0
+        },
+        "stance": {
+            "enter": "none",
+            "exit": "none",
+            "lock_turns": 0,
+            "shift_bp_cost": 0
+        },
+        "repeat_penalty": {
+            "same_skill_decay": [
+                1,
+                0.8,
+                0.6
+            ],
+            "same_attribute_decay": [
+                1,
+                0.85,
+                0.7
+            ],
+            "reset_after_turns": 2
+        },
+        "spark": {
+            "is_provisional_on_learn": false,
+            "provisional_uses_per_battle": 0,
+            "stabilize": {
+                "condition": "use_total",
+                "value": 0
+            }
+        },
+        "timing": {
+            "fast_bonus": 0,
+            "delay_penalty": 0
+        },
+        "ai_tags": [
+            "chain_builder"
+        ],
+        "visual_effect_instruction": "交差する斬線が光る。",
+        "sound_effect_instruction": "重なった斬撃音。"
+    },
+    {
+        "skill_id": "slash_finisher_arc",
+        "name_jp": "終刃・円閃",
+        "name_en": "Final Arc",
+        "description": "連携の締めに最適な高威力回転斬り。",
+        "base_power": 190,
+        "attribute": "斬",
+        "system": "剣技",
+        "mp_cost": 10,
+        "bp_cost": 8,
+        "target": "単体",
+        "inspiration_source": [
+            "slash_cross"
+        ],
+        "chain_compatibility": {
+            "next_attribute_bonus": "無",
+            "chain_bonus_rate": 1.5
+        },
+        "combo": {
+            "send_tags": [
+                "Down"
+            ],
+            "receive_tags": [
+                "Move",
+                "InstantStop",
+                "DeadStop",
+                "Down"
+            ],
+            "never_combo": false,
+            "interrupts_chain": false,
+            "combo_weight": 1.3,
+            "combo_role": "finisher",
+            "max_combo_depth": 99
+        },
+        "cooldown_turns": 2,
+        "charges": {
+            "max": 1,
+            "start": 1,
+            "regen_interval_turns": 4
+        },
+        "stance": {
+            "enter": "assault",
+            "exit": "none",
+            "lock_turns": 1,
+            "shift_bp_cost": 1
+        },
+        "repeat_penalty": {
+            "same_skill_decay": [
+                1,
+                0.7,
+                0.5
+            ],
+            "same_attribute_decay": [
+                1,
+                0.8,
+                0.6
+            ],
+            "reset_after_turns": 3
+        },
+        "spark": {
+            "is_provisional_on_learn": true,
+            "provisional_uses_per_battle": 1,
+            "stabilize": {
+                "condition": "use_total",
+                "value": 8
+            }
+        },
+        "timing": {
+            "fast_bonus": -1,
+            "delay_penalty": 1
+        },
+        "ai_tags": [
+            "finisher"
+        ],
+        "visual_effect_instruction": "巨大な円状斬撃が広がる。",
+        "sound_effect_instruction": "重低音の斬撃SE。"
+    },
+    {
+        "skill_id": "punch_upper",
+        "name_jp": "アッパー",
+        "name_en": "Uppercut",
+        "description": "敵を浮かせる上方向の打撃。",
+        "base_power": 115,
+        "attribute": "打",
+        "system": "拳法",
+        "mp_cost": 5,
+        "bp_cost": 4,
+        "target": "単体",
+        "inspiration_source": [
+            "basic_punch"
+        ],
+        "chain_compatibility": {
+            "next_attribute_bonus": "斬",
+            "chain_bonus_rate": 1.3
+        },
+        "combo": {
+            "send_tags": [
+                "InstantStop"
+            ],
+            "receive_tags": [
+                "Down"
+            ],
+            "never_combo": false,
+            "interrupts_chain": false,
+            "combo_weight": 1.1,
+            "combo_role": "connector",
+            "max_combo_depth": 3
+        },
+        "cooldown_turns": 1,
+        "charges": {
+            "max": 0,
+            "start": 0,
+            "regen_interval_turns": 0
+        },
+        "stance": {
+            "enter": "none",
+            "exit": "none",
+            "lock_turns": 0,
+            "shift_bp_cost": 0
+        },
+        "repeat_penalty": {
+            "same_skill_decay": [
+                1,
+                0.8,
+                0.6
+            ],
+            "same_attribute_decay": [
+                1,
+                0.85,
+                0.7
+            ],
+            "reset_after_turns": 2
+        },
+        "spark": {
+            "is_provisional_on_learn": false,
+            "provisional_uses_per_battle": 0,
+            "stabilize": {
+                "condition": "use_total",
+                "value": 0
+            }
+        },
+        "timing": {
+            "fast_bonus": 1,
+            "delay_penalty": 0
+        },
+        "ai_tags": [
+            "chain_builder"
+        ],
+        "visual_effect_instruction": "拳が上方向へ跳ね上がる。",
+        "sound_effect_instruction": "重い打撃音。"
+    },
+    {
+        "skill_id": "punch_combo_rush",
+        "name_jp": "連打拳",
+        "name_en": "Combo Rush",
+        "description": "素早い連続打撃で隙を与えない。",
+        "base_power": 140,
+        "attribute": "打",
+        "system": "拳法",
+        "mp_cost": 6,
+        "bp_cost": 5,
+        "target": "単体",
+        "inspiration_source": [
+            "punch_upper"
+        ],
+        "chain_compatibility": {
+            "next_attribute_bonus": "雷",
+            "chain_bonus_rate": 1.35
+        },
+        "combo": {
+            "send_tags": [
+                "Down"
+            ],
+            "receive_tags": [
+                "InstantStop",
+                "Spark"
+            ],
+            "never_combo": false,
+            "interrupts_chain": false,
+            "combo_weight": 1.15,
+            "combo_role": "connector",
+            "max_combo_depth": 4
+        },
+        "cooldown_turns": 1,
+        "charges": {
+            "max": 0,
+            "start": 0,
+            "regen_interval_turns": 0
+        },
+        "stance": {
+            "enter": "none",
+            "exit": "none",
+            "lock_turns": 0,
+            "shift_bp_cost": 0
+        },
+        "repeat_penalty": {
+            "same_skill_decay": [
+                1,
+                0.8,
+                0.6
+            ],
+            "same_attribute_decay": [
+                1,
+                0.85,
+                0.7
+            ],
+            "reset_after_turns": 2
+        },
+        "spark": {
+            "is_provisional_on_learn": false,
+            "provisional_uses_per_battle": 0,
+            "stabilize": {
+                "condition": "use_total",
+                "value": 0
+            }
+        },
+        "timing": {
+            "fast_bonus": 1,
+            "delay_penalty": 0
+        },
+        "ai_tags": [
+            "chain_builder"
+        ],
+        "visual_effect_instruction": "拳影が連続で叩き込まれる。",
+        "sound_effect_instruction": "高速打撃音の連打。"
+    },
+    {
+        "skill_id": "punch_finisher_break",
+        "name_jp": "破砕掌",
+        "name_en": "Break Palm",
+        "description": "全体重を乗せた決定打。",
+        "base_power": 200,
+        "attribute": "打",
+        "system": "体術奥義",
+        "mp_cost": 11,
+        "bp_cost": 9,
+        "target": "単体",
+        "inspiration_source": [
+            "punch_combo_rush"
+        ],
+        "chain_compatibility": {
+            "next_attribute_bonus": "雷",
+            "chain_bonus_rate": 1.5
+        },
+        "combo": {
+            "send_tags": [
+                "Down"
+            ],
+            "receive_tags": [
+                "Down",
+                "InstantStop",
+                "DeadStop"
+            ],
+            "never_combo": false,
+            "interrupts_chain": false,
+            "combo_weight": 1.3,
+            "combo_role": "finisher",
+            "max_combo_depth": 99
+        },
+        "cooldown_turns": 2,
+        "charges": {
+            "max": 1,
+            "start": 1,
+            "regen_interval_turns": 4
+        },
+        "stance": {
+            "enter": "assault",
+            "exit": "none",
+            "lock_turns": 1,
+            "shift_bp_cost": 1
+        },
+        "repeat_penalty": {
+            "same_skill_decay": [
+                1,
+                0.7,
+                0.5
+            ],
+            "same_attribute_decay": [
+                1,
+                0.8,
+                0.6
+            ],
+            "reset_after_turns": 3
+        },
+        "spark": {
+            "is_provisional_on_learn": true,
+            "provisional_uses_per_battle": 1,
+            "stabilize": {
+                "condition": "use_total",
+                "value": 8
+            }
+        },
+        "timing": {
+            "fast_bonus": -1,
+            "delay_penalty": 1
+        },
+        "ai_tags": [
+            "finisher"
+        ],
+        "visual_effect_instruction": "衝撃波が前方へ爆発。",
+        "sound_effect_instruction": "重低音の掌打音。"
+    },
+    {
+        "skill_id": "fire_burst",
+        "name_jp": "フレイムバースト",
+        "name_en": "Flame Burst",
+        "description": "爆発的な火炎で追撃する中継術。",
+        "base_power": 130,
+        "attribute": "火",
+        "system": "術法",
+        "mp_cost": 6,
+        "bp_cost": 5,
+        "target": "単体",
+        "inspiration_source": [
+            "basic_fire"
+        ],
+        "chain_compatibility": {
+            "next_attribute_bonus": "雷",
+            "chain_bonus_rate": 1.35
+        },
+        "combo": {
+            "send_tags": [
+                "Hot",
+                "BlackOut"
+            ],
+            "receive_tags": [
+                "Hot"
+            ],
+            "never_combo": false,
+            "interrupts_chain": false,
+            "combo_weight": 1.15,
+            "combo_role": "connector",
+            "max_combo_depth": 3
+        },
+        "cooldown_turns": 1,
+        "charges": {
+            "max": 0,
+            "start": 0,
+            "regen_interval_turns": 0
+        },
+        "stance": {
+            "enter": "none",
+            "exit": "none",
+            "lock_turns": 0,
+            "shift_bp_cost": 0
+        },
+        "repeat_penalty": {
+            "same_skill_decay": [
+                1,
+                0.8,
+                0.6
+            ],
+            "same_attribute_decay": [
+                1,
+                0.85,
+                0.7
+            ],
+            "reset_after_turns": 2
+        },
+        "spark": {
+            "is_provisional_on_learn": false,
+            "provisional_uses_per_battle": 0,
+            "stabilize": {
+                "condition": "use_total",
+                "value": 0
+            }
+        },
+        "timing": {
+            "fast_bonus": 0,
+            "delay_penalty": 0
+        },
+        "ai_tags": [
+            "chain_builder"
+        ],
+        "visual_effect_instruction": "火炎が一気に膨張して爆ぜる。",
+        "sound_effect_instruction": "爆発音＋熱風。"
+    },
+    {
+        "skill_id": "fire_chain_inferno",
+        "name_jp": "連炎獄",
+        "name_en": "Chain Inferno",
+        "description": "連携数に応じて激化する業火。",
+        "base_power": 210,
+        "attribute": "火",
+        "system": "術法奥義",
+        "mp_cost": 12,
+        "bp_cost": 9,
+        "target": "単体",
+        "inspiration_source": [
+            "fire_burst"
+        ],
+        "chain_compatibility": {
+            "next_attribute_bonus": "闇",
+            "chain_bonus_rate": 1.55
+        },
+        "combo": {
+            "send_tags": [
+                "Hot"
+            ],
+            "receive_tags": [
+                "Hot",
+                "BlackOut",
+                "DeadStop"
+            ],
+            "never_combo": false,
+            "interrupts_chain": false,
+            "combo_weight": 1.35,
+            "combo_role": "finisher",
+            "max_combo_depth": 99
+        },
+        "cooldown_turns": 2,
+        "charges": {
+            "max": 1,
+            "start": 1,
+            "regen_interval_turns": 4
+        },
+        "stance": {
+            "enter": "none",
+            "exit": "none",
+            "lock_turns": 0,
+            "shift_bp_cost": 0
+        },
+        "repeat_penalty": {
+            "same_skill_decay": [
+                1,
+                0.7,
+                0.5
+            ],
+            "same_attribute_decay": [
+                1,
+                0.8,
+                0.6
+            ],
+            "reset_after_turns": 3
+        },
+        "spark": {
+            "is_provisional_on_learn": true,
+            "provisional_uses_per_battle": 1,
+            "stabilize": {
+                "condition": "use_total",
+                "value": 8
+            }
+        },
+        "timing": {
+            "fast_bonus": -1,
+            "delay_penalty": 1
+        },
+        "ai_tags": [
+            "finisher"
+        ],
+        "visual_effect_instruction": "炎が連鎖して敵を包む。",
+        "sound_effect_instruction": "燃え盛る轟音。"
+    }
+]
