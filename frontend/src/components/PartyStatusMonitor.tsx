@@ -1,106 +1,163 @@
 import React from 'react';
 import { useGameStore } from '../store/gameStore';
 
-// Style constants hoisted outside component to prevent re-creation
+// Helper to get portrait URL based on Job
+const getPortrait = (job: string) => {
+    switch (job.toLowerCase()) {
+        case 'hero': return '/assets/hero.png';
+        case 'mage': return '/assets/mage.png';
+        case 'monk': return '/assets/monk.png';
+        default: return '/assets/hero.png'; // Fallback
+    }
+};
+
 const styles = {
     container: {
         display: 'flex',
-        flexDirection: 'row' as const, // Horizontal Stack
-        justifyContent: 'space-between',
-        background: 'rgba(0, 5, 10, 0.85)',
-        padding: '5px',
+        flexDirection: 'row' as const,
+        justifyContent: 'center', // Center the party
+        alignItems: 'flex-end',
+        gap: '15px',
+        padding: '10px 20px',
         width: '100%',
-        height: '100px', // Fixed height for bottom bar
-        fontFamily: '"Courier New", monospace',
-        borderTop: '2px solid #004400',
-        gap: '10px'
+        height: '140px', // slightly taller for portraits
+        background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%)', // Fade out at top
+        pointerEvents: 'none' as const, // Let clicks pass through to field if needed (mostly text)
     },
-    panel: {
-        flex: 1,
-        background: 'rgba(0, 0, 0, 0.5)',
-        border: '1px solid #336633',
-        padding: '4px',
-        fontSize: '0.75rem',
-        color: '#aaffaa',
+    card: {
+        position: 'relative' as const,
+        width: '80px',
+        height: '100px',
+        background: 'rgba(20, 20, 30, 0.8)',
+        border: '2px solid #445566',
+        borderRadius: '8px',
         display: 'flex',
         flexDirection: 'column' as const,
-        borderRadius: '3px'
+        alignItems: 'center',
+        padding: '4px',
+        boxShadow: '0 4px 10px rgba(0,0,0,0.5)',
+        transition: 'transform 0.2s',
+        pointerEvents: 'auto' as const,
     },
-    header: {
-        borderBottom: '1px solid #335533',
-        marginBottom: '2px',
-        fontWeight: 'bold',
-        display: 'flex',
-        justifyContent: 'space-between',
-        fontSize: '0.8rem'
+    portraitContainer: {
+        width: '60px',
+        height: '60px',
+        borderRadius: '50%',
+        background: '#111',
+        border: '2px solid #667788',
+        overflow: 'hidden',
+        marginBottom: '5px',
+        marginTop: '-20px', // Pop out top
+        position: 'relative' as const,
+        zIndex: 2
     },
-    row: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        marginBottom: '2px'
-    },
-    barContainer: {
-        background: '#002200',
-        height: '8px',
+    portraitImg: {
         width: '100%',
-        marginTop: '2px',
-        borderRadius: '2px',
-        overflow: 'hidden'
-    },
-    barFill: (pct: number, color: string) => ({
-        background: color,
         height: '100%',
-        width: `${pct * 100}%`,
-        transition: 'width 0.2s',
-        borderRadius: '1px'
-    }),
-    artName: {
-        color: '#ffff00',
-        fontSize: '0.8rem',
+        objectFit: 'cover' as const,
+        imageRendering: 'pixelated' as const // Keep pixel art sharp
+    },
+    infoContainer: {
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column' as const,
+        gap: '2px'
+    },
+    nameMap: {
+        color: '#fff',
+        fontSize: '0.7rem',
+        textAlign: 'center' as const,
+        fontWeight: 'bold',
+        textShadow: '0 0 2px black',
+        marginBottom: '2px',
         whiteSpace: 'nowrap' as const,
         overflow: 'hidden',
         textOverflow: 'ellipsis'
     },
-    penalty: {
-        color: '#ff5555',
-        fontSize: '0.7rem'
+    barWrapper: {
+        width: '100%',
+        height: '6px',
+        background: '#333',
+        borderRadius: '3px',
+        overflow: 'hidden',
+        marginBottom: '2px',
+        border: '1px solid black'
+    },
+    hpFill: (pct: number) => ({
+        width: `${pct * 100}%`,
+        height: '100%',
+        background: 'linear-gradient(90deg, #00cc00, #44ff44)',
+        transition: 'width 0.3s'
+    }),
+    bpFill: (pct: number) => ({
+        width: `${pct * 100}%`,
+        height: '100%',
+        background: 'linear-gradient(90deg, #ddaa00, #ffee00)', // Yellow/Gold for Energy
+        transition: 'width 0.3s'
+    }),
+    ultiGlow: {
+        borderColor: '#ffee00',
+        boxShadow: '0 0 15px rgba(255, 220, 0, 0.6)'
     }
 };
 
 export const PartyStatusMonitor: React.FC = () => {
     const party = useGameStore(s => s.party);
+    const activeAttackerId = useGameStore(s => s.activeAttackerId);
 
     return (
         <div style={styles.container}>
             {party.map(member => {
                 const s = member.battleState;
+                const hpPct = 1.0; // Mock HP for now
+                const bpPct = s.bp.current / s.bp.max;
+                const isFullBp = s.bp.current >= s.bp.max;
+                const isActing = member.id === activeAttackerId;
 
-                // Calculate Penalty status for display
-                const lastMove = s.history[s.history.length - 1];
-                const isSpamming = lastMove && lastMove.skillId === member.currentArtId;
+                // Determine border and shadow based on state priority
+                let borderColor = '#445566';
+                let boxShadow = '0 4px 10px rgba(0,0,0,0.5)';
+
+                if (isFullBp) {
+                    borderColor = '#ffee00';
+                    boxShadow = '0 0 15px rgba(255, 220, 0, 0.6)';
+                }
+
+                if (isActing) {
+                    borderColor = '#00ccff';
+                    boxShadow = '0 0 15px #00ccff';
+                }
+
+                // Card Style with conditional Glow
+                const cardStyle = {
+                    ...styles.card,
+                    border: `2px solid ${borderColor}`,
+                    boxShadow: boxShadow,
+                    transform: isActing ? 'scale(1.05)' : 'scale(1)',
+                };
 
                 return (
-                    <div key={member.id} style={styles.panel}>
-                        <div style={styles.header}>
-                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                <span style={{ fontSize: '0.9rem' }}>{member.name}</span>
-                                <span style={{ fontSize: '0.65rem', color: '#88cc88' }}>{member.job}</span>
+                    <div key={member.id} style={cardStyle} className="hero-card">
+                        <div style={styles.portraitContainer}>
+                            <img
+                                src={getPortrait(member.job)}
+                                alt={member.job}
+                                style={styles.portraitImg}
+                            />
+                        </div>
+
+                        <div style={styles.infoContainer}>
+                            <div style={styles.nameMap}>{member.name}</div>
+
+                            {/* HP Bar */}
+                            <div style={styles.barWrapper}>
+                                <div style={styles.hpFill(hpPct)} />
                             </div>
-                            <div style={{ fontSize: '0.7rem', alignSelf: 'center' }}>HP:100%</div>
-                        </div>
 
-                        {/* BP Row */}
-                        <div style={styles.row}>
-                            <span>BP</span>
-                            <span>{s.bp.current}/{s.bp.max}</span>
-                        </div>
-                        <div style={styles.barContainer}>
-                            <div style={styles.barFill(s.bp.current / s.bp.max, '#00ccff')} />
-                        </div>
-
-                        {/* Charges/CD Status (Simplified) */}
-                        <div style={{ marginTop: 'auto' }}>
-                            {isSpamming && <div style={styles.penalty}>⚠️ REPEAT PENALTY</div>}
+                            {/* BP Bar (Energy) */}
+                            <div style={styles.barWrapper}>
+                                <div style={styles.bpFill(bpPct)} />
+                            </div>
                         </div>
                     </div>
                 );

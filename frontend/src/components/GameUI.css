@@ -47,7 +47,8 @@
     align-items: flex-end;
     /* Align cards to right */
     justify-content: flex-start;
-    padding-top: 50px;
+    padding-top: 40px;
+    /* Level 2 Start */
 }
 
 /* --- Components --- */
@@ -58,6 +59,8 @@
     flex-direction: column;
     align-items: flex-start;
     padding: 10px;
+    margin-top: 40px;
+    /* Level 2 Start */
 }
 
 .hits-row {
@@ -72,7 +75,13 @@
     color: #00ccff;
     /* SO2 Blue */
     font-style: italic;
+    display: inline-block;
+    min-width: 60px;
+    /* Ensure space */
     text-shadow: 0 0 10px rgba(0, 204, 255, 0.8);
+    padding-right: 20px;
+    /* Aggressive padding for italic clipping */
+    margin-right: 15px;
 }
 
 .hits-val {
@@ -81,10 +90,12 @@
     line-height: 1;
     font-weight: 700;
     background: linear-gradient(180deg, #fff, #00ccff);
+    background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     filter: drop-shadow(0 0 5px #0066ff);
     font-style: italic;
+    padding-right: 20px;
 }
 
 .dmg-row {
@@ -112,7 +123,8 @@
 /* 2. Center "SPECIAL ARTS" Banner */
 .ui-special-arts-banner {
     position: absolute;
-    top: 60px;
+    top: 150px;
+    /* Moved down to Level 3 (Below Hits/Menu) */
     left: 0;
     width: 100%;
 

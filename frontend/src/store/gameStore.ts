@@ -100,21 +100,25 @@ export interface PartyMember {
     battleState: BattleState; // New battle state container
 }
 
-// import { ResonanceNamingService } from '../utils/ResonanceNamingService';
+import { ResonanceNamingService } from '../utils/ResonanceNamingService';
 
 interface DiscoveredResonance {
     key: string;
     name: string;
 }
 
+interface CurrentAction {
+    actorName: string;
+    skillName: string;
+    participants?: number[]; // IDs of participants for Cut-in
+}
+
 interface GameState {
     floor: number;
     phase: GamePhase;
-    // logs: string[]; // Replaced by stats
     glimmerActive: boolean;
-    lastDamage: { value: number; timestamp: number } | null;
-    lastDamage: { value: number; timestamp: number } | null;
-    lastResonance: { name: string; count: number; timestamp: number } | null; // Added count
+    lastDamage: { value: number; timestamp: number; isResonance?: boolean } | null;
+    lastResonance: { name: string; count: number; timestamp: number } | null;
 
     stats: {
         totalDamage: number;
@@ -131,10 +135,17 @@ interface GameState {
     party: PartyMember[];
     activeResonanceName: string | null;
     activeAttackerId: number | null;
-    currentAction: { actorName: string; skillName: string } | null; // Added for Phase 17
+    currentAction: CurrentAction | null;
 
     // Phase 5: Skills Data
     masterArts: Record<string, Art>;
+
+    // Phase 6: Enemy State
+    enemy: {
+        hp: number;
+        maxHp: number;
+        name: string;
+    };
 
     // Actions
     advance: () => void;
@@ -143,21 +154,25 @@ interface GameState {
     endBattle: (result: 'WIN' | 'LOSE') => void;
     addLog: (message: string) => void;
     setGlimmerActive: (active: boolean) => void;
-    triggerDamage: (value: number) => void;
+    triggerDamage: (value: number, isResonance?: boolean) => void;
     incrementResonance: () => void;
     resetResonance: () => void;
     resetChain: () => void;
     setActiveAttacker: (id: number | null) => void;
-    setCurrentAction: (action: { actorName: string; skillName: string } | null) => void;
+    setCurrentAction: (action: { actorName: string; skillName: string; participants?: number[] } | null) => void;
     fetchArts: () => Promise<void>;
     fetchParty: () => Promise<void>;
     learnArt: (memberId: number, skillId: string) => void;
 
     // New Battle Actions
     initBattleState: () => void;
-    regenResources: () => void; // Call every "turn" or round
+    regenResources: () => void;
     consumeResource: (memberId: number, art: Art) => void;
     registerResonanceChain: (prevId: string, currId: string) => void;
+
+    // v2 Battle Actions
+    damageEnemy: (amount: number, isResonance?: boolean) => void;
+    executeTurn: () => { isResonance: boolean; skillName: string; damage: number; participants: number[] } | null;
 }
 
 const DEFAULT_BATTLE_STATE: BattleState = {
@@ -220,6 +235,13 @@ export const useGameStore = create<GameState>((set, get) => ({
     ],
 
     masterArts: {},
+
+    // Enemy State
+    enemy: {
+        hp: 1000,
+        maxHp: 1000,
+        name: 'Enemy'
+    },
 
     fetchArts: async () => {
         try {
@@ -315,32 +337,131 @@ export const useGameStore = create<GameState>((set, get) => ({
         get().advance_impl();
     },
     advance_impl: () => {
-        const { floor, addLog, startBattle } = get();
-        const isBattle = Math.random() < 0.4;
-        if (isBattle) {
-            addLog(`Encountered an enemy at Floor ${floor}!`);
-            startBattle();
+        const { floor, addLog, startBattle, party, phase } = get();
+
+        // 1. Exploration Phase
+        if (phase === 'EXPLORATION') {
+            const isBattle = Math.random() < 0.4;
+            if (isBattle) {
+                addLog(`Encountered an enemy at Floor ${floor}!`);
+                startBattle();
+            } else {
+                set((state) => ({ floor: state.floor + 1 }));
+                addLog(`Advanced to Floor ${floor + 1}. Nothing happened.`);
+            }
+            return;
+        }
+
+        // 2. Battle Phase (Turn Execution)
+        // Simple Turn System: Pick next actor who is ready (cooldowns etc - simplified here as "Anyone can act")
+        // We will randomly pick an actor for this demo, BUT check for Resonance with others.
+
+        // Mock Timeline: Sort by QUI (Desc)
+        const availableMembers = party.filter(p => p.battleState.bp.current > 0);
+
+        if (availableMembers.length === 0) {
+            get().regenResources();
+            return;
+        }
+
+        // Sort by speed
+        availableMembers.sort((a, b) => b.stats.qui - a.stats.qui);
+        const leader = availableMembers[0];
+
+        // CHECK RESONANCE (Lookahead)
+        const participants = [leader];
+        const names: string[] = [leader.currentArtId];
+        const masterArts = get().masterArts;
+        const leaderArt = masterArts[leader.currentArtId];
+
+        // Check art existence
+        if (!leaderArt) {
+            console.warn(`Leader Art not found: ${leader.currentArtId}`);
+        }
+
+        for (let i = 1; i < availableMembers.length; i++) {
+            const nextMem = availableMembers[i];
+            const nextArt = masterArts[nextMem.currentArtId];
+
+            if (!nextArt) break;
+
+            // Link Check (50% chance for Gameplay Balance)
+            const roll = Math.random();
+            const linkSuccess = roll < 0.5;
+
+            if (linkSuccess && participants.length < 5) {
+                participants.push(nextMem);
+                names.push(nextArt.skill_id);
+            } else {
+                break; // Chain broken
+            }
+        }
+
+        // Create the Action(s)
+        const isResonance = participants.length > 1;
+
+        if (isResonance) {
+            // GROUP ACTION
+            // 1. Generate Name
+            let resonanceName = "Resonance Action";
+            // We can use NamingService here iteratively
+            let tempName = "";
+            participants.forEach((p, idx) => {
+                const art = masterArts[p.currentArtId];
+                if (idx === 0) tempName = art.name_jp;
+                else {
+                    const prevArt = masterArts[participants[idx - 1].currentArtId];
+                    tempName = ResonanceNamingService.generateName(tempName, prevArt.attribute, art.name_jp, art.attribute, idx + 1);
+                }
+            });
+            resonanceName = tempName;
+
+            // 2. Set State
+            set({
+                activeAttackerId: leader.id, // Primary
+                currentAction: {
+                    actorName: "Party Chain",
+                    skillName: resonanceName,
+                    participants: participants.map(p => p.id) // NEW: List of IDs
+                },
+                activeResonanceName: resonanceName,
+                resonanceCount: participants.length,
+                lastResonance: { name: resonanceName, count: participants.length, timestamp: Date.now() }
+            });
+
+            // 3. Log
+            addLog(`Resonance Triggered! ${participants.map(p => p.name).join(' -> ')}: ${resonanceName}`);
+
+            // 4. Consume Resources for ALL
+            participants.forEach(p => {
+                get().consumeResource(p.id, masterArts[p.currentArtId]);
+            });
+
         } else {
-            set((state) => ({ floor: state.floor + 1 }));
-            addLog(`Advanced to Floor ${floor + 1}. Nothing happened.`);
+            // SOLO ACTION
+            const art = leaderArt;
+            set({
+                activeAttackerId: leader.id,
+                currentAction: { actorName: leader.name, skillName: art.name_jp },
+                activeResonanceName: null,
+                resonanceCount: 0
+            });
+            get().consumeResource(leader.id, art);
+            // Setup single hit (maybe trigger logic in BattleScene)
         }
     },
 
     startBattle: () => {
-        get().initBattleState(); // Reset states
-        set({ phase: 'BATTLE', resonanceCount: 0 });
+        get().initBattleState();
+        set({
+            phase: 'BATTLE',
+            resonanceCount: 0,
+            enemy: { hp: 1000, maxHp: 1000, name: 'Enemy' }
+        });
     },
 
     endBattle: (result) => {
         const { addLog } = get();
-
-        const resetStats = {
-            totalDamage: 0,
-            maxDamage: 0,
-            resonanceTotal: 0,
-            skillCounts: {} // Optional: Keep skill counts if we want persistent stats, but for battle UI cleanup we likely want reset. 
-            // Actually, let's keep skillCounts for the run, but reset battle-specific trackers.
-        };
 
         const battleCleanUp = {
             resonanceCount: 0,
@@ -387,15 +508,16 @@ export const useGameStore = create<GameState>((set, get) => ({
         set({ glimmerActive: active });
     },
 
-    triggerDamage: (value) => {
-        set(state => {
-            const newTotal = state.stats.totalDamage + value;
-            const newMax = Math.max(state.stats.maxDamage, value);
-            return {
-                lastDamage: { value, timestamp: Date.now() },
-                stats: { ...state.stats, totalDamage: newTotal, maxDamage: newMax }
-            };
-        });
+    triggerDamage: (amount, isResonance = false) => {
+        set(state => ({
+            lastDamage: { value: amount, timestamp: Date.now(), isResonance }, // Pass flag
+            stats: {
+                ...state.stats,
+                totalDamage: state.stats.totalDamage + amount,
+                maxDamage: Math.max(state.stats.maxDamage, amount),
+                resonanceTotal: state.stats.resonanceTotal + (isResonance ? 1 : 0)
+            }
+        }));
     },
 
     incrementResonance: () => {
@@ -552,40 +674,194 @@ export const useGameStore = create<GameState>((set, get) => ({
 
             if (!prevArt || !currArt) return {};
 
-            // Accumulative Naming Logic
-            // Accumulative Naming Logic
-            let baseName = state.activeResonanceName;
-            let currentCount = state.resonanceCount + 1; // Increment local count for display
+            // Default: New Chain (Count 1)
+            let newResonanceCount = 1;
+            let newBaseName = currArt.name_jp;
+            let isChainSuccess = false;
 
-            if (!baseName) {
-                // If this is the start of a chain, use previous art as base
-                baseName = prevArt.name_jp;
-                currentCount = 2; // Start at 2 for a chain
+            // Frequency Tuning
+            // User feedback: "Too many resonances". We want it to be special.
+            const CHAIN_START_CHANCE = 0.3; // 30% chance to connect 1->2
+            const CHAIN_CONTINUE_CHANCE = 0.5; // 50% chance to keep going
+
+            if (state.resonanceCount === 0) {
+                // Initial State: First attack
+                // Next attack will try to chain from this 1.
+                newResonanceCount = 1;
+                newBaseName = currArt.name_jp;
+            } else {
+                // Attempting compatibility
+                // Logic:
+                // 1. Check Technical Compatibility (Tags, etc - Mocked here as always true for now)
+                // 2. Check Random Chance (The "Wakuwaku" factor)
+
+                const chance = (state.resonanceCount === 1) ? CHAIN_START_CHANCE : CHAIN_CONTINUE_CHANCE;
+                const roll = Math.random();
+
+                const shouldChain = (roll < chance) && (state.resonanceCount < 5);
+
+                if (shouldChain) {
+                    isChainSuccess = true;
+                    newResonanceCount = state.resonanceCount + 1;
+
+                    if (state.resonanceCount === 1) {
+                        // 1 -> 2: Start of named chain
+                        newBaseName = prevArt.name_jp + "・" + currArt.name_jp;
+                    } else {
+                        // 2+ -> 3+: Append
+                        newBaseName = (state.activeResonanceName || prevArt.name_jp) + "・" + currArt.name_jp;
+                    }
+                } else {
+                    // Failed to chain -> Reset to 1 (New starter)
+                    newResonanceCount = 1;
+                    newBaseName = currArt.name_jp;
+                    isChainSuccess = false;
+                }
             }
 
-            // Simple concatenation as requested by user ("Slash" + "Fire" -> "SlashFire")
-            const newName =
-                (state.resonanceCount === 0)
-                    ? (prevArt.name_jp + currArt.name_jp) // First link: A + B
-                    : (baseName + currArt.name_jp);       // Subsequent: AB + C
+            // If we reset (failed chain), we return simpler state
+            if (!isChainSuccess) {
+                // Important: We must update the state so the Next attack sees Count=1
+                return {
+                    resonanceCount: 1,
+                    activeResonanceName: newBaseName
+                };
+            }
 
-            // Update Grimoire logic (omitted for brevity, keep existing flow if possible or just update name)
+            // Success!! Update Grimoire & Trigger Visuals
             const key = `${prevSkillId}:${currentSkillId}`;
             const alreadyDiscovered = state.grimoire.discoveredResonances.some(r => r.key === key);
             let newGrimoire = state.grimoire;
             if (!alreadyDiscovered) {
                 newGrimoire = {
                     ...state.grimoire,
-                    discoveredResonances: [...state.grimoire.discoveredResonances, { key, name: newName }]
+                    discoveredResonances: [...state.grimoire.discoveredResonances, { key, name: newBaseName }]
                 };
             }
 
             return {
                 grimoire: newGrimoire,
-                activeResonanceName: newName,
-                // Trigger Visual Callout with accumulated name AND count
-                lastResonance: { name: newName, count: currentCount, timestamp: Date.now() }
+                activeResonanceName: newBaseName,
+                resonanceCount: newResonanceCount,
+                lastResonance: { name: newBaseName, count: newResonanceCount, timestamp: Date.now() }
             };
         });
+    },
+
+    // v2 Battle Actions
+    damageEnemy: (amount: number, isResonance: boolean = false) => {
+        set(state => {
+            const newHp = Math.max(0, state.enemy.hp - amount);
+            return { enemy: { ...state.enemy, hp: newHp } };
+        });
+
+        // Trigger Damage Event (Updates Logic/Stats)
+        get().triggerDamage(amount, isResonance);
+
+        // Check for victory
+        const { enemy, endBattle } = get();
+        if (enemy.hp <= 0) {
+            setTimeout(() => endBattle('WIN'), 1500);
+        }
+    },
+
+    executeTurn: () => {
+        const { party, masterArts, phase } = get();
+
+        if (phase !== 'BATTLE') return null;
+
+        // Sort by QUI (speed)
+        const availableMembers = party.filter(p => p.battleState.bp.current > 0);
+        if (availableMembers.length === 0) {
+            get().regenResources();
+            return null;
+        }
+
+        availableMembers.sort((a, b) => b.stats.qui - a.stats.qui);
+        const leader = availableMembers[0];
+        const leaderArt = masterArts[leader.currentArtId];
+
+        if (!leaderArt) return null;
+
+        // Check for Resonance (Chain)
+        const participants = [leader];
+
+        for (let i = 1; i < availableMembers.length && participants.length < 5; i++) {
+            const nextMem = availableMembers[i];
+            const nextArt = masterArts[nextMem.currentArtId];
+            if (!nextArt) break;
+
+            // 50% chain chance
+            if (Math.random() < 0.5) {
+                participants.push(nextMem);
+            } else {
+                break;
+            }
+        }
+
+        const isResonance = participants.length > 1;
+
+        // Calculate damage
+        let damage = 0;
+        let skillName = leaderArt.name_jp;
+
+        if (isResonance) {
+            // Resonance: Sum of all arts with bonus
+            participants.forEach((p, idx) => {
+                const art = masterArts[p.currentArtId];
+                if (art) {
+                    const bonus = 1 + (idx * 0.3); // +30% per chain
+                    damage += Math.floor(art.base_power * bonus);
+                }
+            });
+
+            // Generate resonance name
+            let tempName = "";
+            participants.forEach((p, idx) => {
+                const art = masterArts[p.currentArtId];
+                if (idx === 0) tempName = art.name_jp;
+                else {
+                    const prevArt = masterArts[participants[idx - 1].currentArtId];
+                    tempName = ResonanceNamingService.generateName(tempName, prevArt.attribute, art.name_jp, art.attribute, idx + 1);
+                }
+            });
+            skillName = tempName;
+
+            set({
+                activeResonanceName: skillName,
+                resonanceCount: participants.length,
+                lastResonance: { name: skillName, count: participants.length, timestamp: Date.now() }
+            });
+        } else {
+            damage = leaderArt.base_power || 100;
+        }
+
+        // Consume resources
+        participants.forEach(p => {
+            get().consumeResource(p.id, masterArts[p.currentArtId]);
+        });
+
+        // Update stats
+        set(state => ({
+            currentAction: {
+                actorName: isResonance ? "Party Chain" : leader.name,
+                skillName,
+                participants: participants.map(p => p.id)
+            },
+            activeAttackerId: leader.id,
+            stats: {
+                ...state.stats,
+                // totalDamage: state.stats.totalDamage + damage,  <-- REMOVED (Moved to damageEnemy)
+                // maxDamage: Math.max(state.stats.maxDamage, damage), <-- REMOVED
+                // resonanceTotal: state.stats.resonanceTotal + (isResonance ? 1 : 0) <-- REMOVED
+            }
+        }));
+
+        return {
+            isResonance,
+            skillName,
+            damage,
+            participants: participants.map(p => p.id)
+        };
     }
 }));

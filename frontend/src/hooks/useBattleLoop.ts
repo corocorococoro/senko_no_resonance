@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useGameStore } from '../store/gameStore';
 import type { Art, PartyMember } from '../store/gameStore';
+import { ResonanceNamingService } from '../utils/ResonanceNamingService';
 
 interface BattleAction {
     actorId: number;
@@ -108,22 +109,42 @@ export const useBattleLoop = () => {
                 let isResonance = false;
 
                 if (prev) {
+                    // OLD: Strict Tag Logic
+                    /*
                     const sameTarget = prev.targetId === curr.targetId;
                     const interrupt = curr.art.combo?.interrupts_chain;
                     const sendTags = prev.art.combo?.send_tags || [];
                     const receiveTags = curr.art.combo?.receive_tags || [];
                     const hasTagMatch = sendTags.some(t => receiveTags.includes(t));
-
+                    
                     if (sameTarget && !interrupt && hasTagMatch) {
                         isResonance = true;
-                    } else {
-                        isResonance = false;
+                    }
+                    */
+
+                    // NEW: Gameplay Logic (Matches gameStore.ts)
+                    // 50% Chains for Balanced Gameplay
+                    if (Math.random() < 0.5) {
+                        isResonance = true;
                     }
                 }
 
+                // Generate Resonance Name
+                let displaySkillName = action.art.name_jp;
+
                 if (isResonance && prev) {
+                    const prevArtName = prev.art.name_jp;
+                    const prevAttr = prev.art.attribute;
+                    const currAttr = action.art.attribute;
+
+                    // Generate Cool Name
+                    displaySkillName = ResonanceNamingService.generateName(prevArtName, prevAttr, action.art.name_jp, currAttr, 2);
+
                     useGameStore.getState().registerResonanceChain(prev.art.skill_id, curr.art.skill_id);
                     useGameStore.getState().incrementResonance();
+
+                    // LOG THE CUT-IN
+                    addLog(`⚡️ RESONANCE: "${displaySkillName}" triggered!`);
                 } else {
                     if (prev) {
                         useGameStore.getState().resetChain();
@@ -138,7 +159,11 @@ export const useBattleLoop = () => {
 
                 // Set Current Action for UI (Phase 17)
                 const actorName = state.party.find(p => p.id === action.actorId)?.name || 'Unknown';
-                useGameStore.getState().setCurrentAction({ actorName, skillName: action.art.name_jp });
+                useGameStore.getState().setCurrentAction({
+                    actorName,
+                    skillName: displaySkillName, // Use generated name
+                    participants: isResonance ? [prev?.actorId || 0, action.actorId] : [action.actorId] // Mock participants for Cut-in
+                });
 
                 // Calculate Damage (simplified)
                 const resonanceCount = useGameStore.getState().resonanceCount;
@@ -175,11 +200,33 @@ export const useBattleLoop = () => {
                     }
                 }
 
-                addLog(`${getActionName(action.art)}!! ${dmg} DMG`);
-                triggerDamage(dmg);
+                // CRITICAL FIX: Pass isResonance flag!
+                // triggerDamage(dmg, isResonance); <--- MOVED FROM HERE
 
-                // Decrement HP
-                enemyHpRef.current -= dmg;
+                if (isResonance) {
+                    // RESONANCE PATH: Delayed Log & HP Update (Sync with Zudon at 3500ms)
+                    // We wait 3600ms to ensure Visual Impact has triggered (3.5s)
+                    console.log(`[SEQ] ⏳ Logic Pause: Waiting 3600ms for Impact... at ${Date.now()}`);
+                    await new Promise(r => setTimeout(r, 3600));
+
+                    console.log(`[SEQ] 💥 Logic: Applying Damage ${dmg} at ${Date.now()}`); // TRACE
+                    addLog(`${displaySkillName}!! ${dmg} DMG`);
+                    triggerDamage(dmg, isResonance); // <--- MOVED TO HERE (Delayed)
+                    enemyHpRef.current -= dmg;
+
+                    // Brief pause before next turn
+                    console.log(`[SEQ] ⏳ Logic Pause: Waiting 500ms for Outro... at ${Date.now()}`);
+                    await new Promise(r => setTimeout(r, 500));
+                } else {
+                    // NORMAL PATH: Immediate Log
+                    console.log(`[SEQ] 💥 Logic: Applying Damage ${dmg} at ${Date.now()}`); // TRACE
+                    addLog(`${getActionName(action.art)}!! ${dmg} DMG`);
+                    triggerDamage(dmg, isResonance); // <--- MOVED TO HERE (Immediate)
+                    enemyHpRef.current -= dmg;
+
+                    // Standard Wait
+                    await new Promise(r => setTimeout(r, 800));
+                }
 
                 if (enemyHpRef.current <= 0) {
                     useGameStore.getState().setActiveAttacker(null);
@@ -189,8 +236,7 @@ export const useBattleLoop = () => {
                     return;
                 }
 
-                // Delay
-                await new Promise(r => setTimeout(r, 600));
+                if (isResonance) console.log(`[SEQ] ▶️ Logic Resume: Turn End at ${Date.now()}`); // TRACE
             }
 
             useGameStore.getState().setActiveAttacker(null);
