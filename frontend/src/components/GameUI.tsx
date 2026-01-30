@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useGameStore } from '../store/gameStore';
-import { PartyStatusMonitor } from './PartyStatusMonitor';
+// import { PartyStatusMonitor } from './PartyStatusMonitor';
 import { GrimoireModal } from './GrimoireModal';
 import './GameUI.css';
 
@@ -49,36 +49,7 @@ const ComboGauge: React.FC = () => {
     );
 };
 
-// Top Center: Special Arts Banner
-const SpecialArtsBanner: React.FC = () => {
-    const lastResonance = useGameStore(s => s.lastResonance);
-    const phase = useGameStore(s => s.phase);
-    const [visible, setVisible] = useState(false);
-    const [displayParams, setDisplayParams] = useState<{ name: string; count: number } | null>(null);
-
-    useEffect(() => {
-        if (lastResonance && (Date.now() - lastResonance.timestamp < 3000)) {
-            // Only show if count >= 2 (which it should be for resonance)
-            setDisplayParams({ name: lastResonance.name, count: lastResonance.count });
-            setVisible(true);
-            const timer = setTimeout(() => setVisible(false), 2500);
-            return () => clearTimeout(timer);
-        }
-    }, [lastResonance]);
-
-    if (phase !== 'BATTLE') return null;
-    if (!visible || !displayParams) return null;
-
-    return (
-        <div className="ui-special-arts-banner">
-            <div className="banner-label">SPECIAL ARTS</div>
-            <div className="banner-content">
-                <div className="chain-counter">{displayParams.count} CHAIN!!</div>
-                <div className="banner-text">{displayParams.name}</div>
-            </div>
-        </div>
-    );
-};
+// Top Center: Special Arts Banner - REMOVED (Consolidated to Center Cut-in)
 
 // Right Side: Active Action (Log-style or Box)
 const ActiveActionDisplay: React.FC = () => {
@@ -86,7 +57,13 @@ const ActiveActionDisplay: React.FC = () => {
     const phase = useGameStore(s => s.phase);
 
     if (phase !== 'BATTLE') return null;
+    if (phase !== 'BATTLE') return null;
     if (!currentAction) return null;
+
+    // Hide during Resonance (Cut-in takes over)
+    // We can infer resonance if there are multiple participants or checking a flag if we added one (we did add actorName logic, but participants.length > 1 is a safe check for now)
+    const isResonance = currentAction.participants && currentAction.participants.length > 1;
+    if (isResonance) return null;
 
     // Unique key to force animation restart on change
     return (
@@ -99,19 +76,6 @@ const ActiveActionDisplay: React.FC = () => {
     );
 };
 
-// Bottom: Party Status
-const PartyStatusWrapper: React.FC = () => {
-    const phase = useGameStore(s => s.phase);
-
-    // Hide in Exploration for a cleaner view ("Sukkiri")
-    if (phase !== 'BATTLE') return null;
-
-    return (
-        <div className="ui-party-bottom-bar">
-            <PartyStatusMonitor />
-        </div>
-    );
-};
 
 // --- Main ---
 export const GameUI: React.FC = () => {
@@ -147,9 +111,8 @@ export const GameUI: React.FC = () => {
                     <ComboGauge />
                 </div>
 
-                {/* Center */}
+                {/* Center - Empty/Removed */}
                 <div className="ui-center-col">
-                    <SpecialArtsBanner />
                 </div>
 
                 {/* Right */}
@@ -158,8 +121,7 @@ export const GameUI: React.FC = () => {
                 </div>
             </div>
 
-            {/* Bottom Layer (Fixed) */}
-            <PartyStatusWrapper />
+            {/* Bottom Layer (Fixed) - Removed as requested */}
 
             {showGrimoire && <GrimoireModal onClose={() => setShowGrimoire(false)} />}
         </div>

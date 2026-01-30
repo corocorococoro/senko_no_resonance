@@ -1,15 +1,11 @@
 import React from 'react';
 import { useGameStore } from '../store/gameStore';
+import { Character } from '../logic/entities/Character';
 
 // Helper to get portrait URL based on Job
-const getPortrait = (job: string) => {
-    switch (job.toLowerCase()) {
-        case 'hero': return '/assets/hero.png';
-        case 'mage': return '/assets/mage.png';
-        case 'monk': return '/assets/monk.png';
-        default: return '/assets/hero.png'; // Fallback
-    }
-};
+// REMOVED: Using centralized getCharacterVisuals instead
+// Helper to get portrait URL based on Job
+// REMOVED: Using centralized getCharacterVisuals instead
 
 const styles = {
     container: {
@@ -136,14 +132,27 @@ export const PartyStatusMonitor: React.FC = () => {
                     transform: isActing ? 'scale(1.05)' : 'scale(1)',
                 };
 
+                // Use OOP Character
+                const char = new Character(member);
+                const bgStyle = char.getCssColor();
+
                 return (
                     <div key={member.id} style={cardStyle} className="hero-card">
                         <div style={styles.portraitContainer}>
-                            <img
-                                src={getPortrait(member.job)}
-                                alt={member.job}
-                                style={styles.portraitImg}
-                            />
+                            {/* Procedural Portrait: Colored Block */}
+                            <div style={{
+                                width: '100%',
+                                height: '100%',
+                                background: bgStyle,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: 'rgba(0,0,0,0.5)',
+                                fontWeight: 'bold',
+                                fontSize: '24px'
+                            }}>
+                                {char.name[0]}
+                            </div>
                         </div>
 
                         <div style={styles.infoContainer}>

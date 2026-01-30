@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import type { ScriptEvent } from '../../../logic/battle/types';
-import { Text, Container, Graphics, Sprite } from 'pixi.js';
+import { Text, Graphics } from 'pixi.js';
 import { ParticleSystem } from './ParticleSystem';
 
 interface VisualDirectorProps {
@@ -14,7 +14,7 @@ export const VisualDirector: React.FC<VisualDirectorProps> = ({ currentEvent, on
     useEffect(() => {
         if (!pixi.isReady) return;
 
-        const { app, layers, assets } = pixi;
+        const { app, layers } = pixi;
 
         // Initialize Particle System
         const particleSystem = new ParticleSystem(app, layers.vfx);
@@ -29,104 +29,16 @@ export const VisualDirector: React.FC<VisualDirectorProps> = ({ currentEvent, on
             const handleVisuals = () => {
                 switch (currentEvent.type) {
                     case 'CUT_IN_START': {
-                        // ... Implementation same as before ...
-                        // For brevity in this replacement, I'll copy the key logic or trust previous context
-                        // But replace_file_content requires exact context or full replacement.
-                        // Since I need to insert logic deeply, I will restructure this.
-                        // Actually, to avoid massive re-paste, I will use targeted edits IF possible.
-                        // But I'm effectively wrapping the event handler with particle system access.
-
-                        // Let's implement the full switch block content properly to ensure no code loss.
-                        // Wait, previous file content is 300 lines. Replacing ALL is safest to ensure 'particleSystem' scope availability.
-
-                        // To keep this manageable and safe, I will output the FULL file content with recent changes integrated.
-                        // This prevents scope errors.
-
-                        // [RE-IMPLEMENTING FULL SWITCH FOR SAFETY]
-
-                        console.log("[VisualDirector] Spawning CUT_IN");
-                        const container = new Container();
-
-                        // 1. Gradient Background
-                        const bg = new Graphics();
-                        const gradientSteps = 20;
-                        const barHeight = 160;
-                        for (let i = 0; i < gradientSteps; i++) {
-                            const ratio = i / gradientSteps;
-                            const r = Math.floor(0x00 + (0xFF - 0x00) * ratio);
-                            const g = Math.floor(0xFF - (0xFF - 0x00) * ratio);
-                            const b = 0xFF;
-                            const color = (r << 16) | (g << 8) | b;
-                            bg.rect(0, (i / gradientSteps) * barHeight, app.screen.width, barHeight / gradientSteps + 1);
-                            bg.fill({ color, alpha: 0.85 });
-                        }
-                        bg.y = app.screen.height / 2 - barHeight / 2;
-
-                        // 2. Lines
-                        const lineTop = new Graphics();
-                        lineTop.rect(0, 0, app.screen.width, 3).fill(0xFFFFFF);
-                        lineTop.y = app.screen.height / 2 - barHeight / 2;
-
-                        const lineBottom = new Graphics();
-                        lineBottom.rect(0, 0, app.screen.width, 3).fill(0xFFFFFF);
-                        lineBottom.y = app.screen.height / 2 + barHeight / 2 - 3;
-
-                        // 3. Text
-                        const text = new Text({
-                            text: currentEvent.name || "RESONANCE!!",
-                            style: {
-                                fontFamily: 'Arial Black, Arial',
-                                fontSize: 52,
-                                fill: '#ffffff',
-                                fontWeight: 'bold',
-                                stroke: { width: 6, color: '#00FFFF' },
-                                dropShadow: { color: '#00FFFF', blur: 15, distance: 0, alpha: 0.8 }
-                            }
-                        });
-                        text.anchor.set(0.5);
-                        text.x = app.screen.width / 2;
-                        text.y = app.screen.height / 2;
-
-                        container.addChild(bg, lineTop, lineBottom, text);
-                        container.x = -app.screen.width;
-                        container.alpha = 0;
-                        layers.ui.addChild(container);
-
-                        // Animation
-                        let progress = 0;
-                        const animateIn = () => {
-                            progress += 0.08;
-                            if (progress >= 1) {
-                                progress = 1;
-                                app.ticker.remove(animateIn);
-                            }
-                            const eased = 1 - Math.pow(1 - progress, 3);
-                            container.x = -app.screen.width * (1 - eased);
-                            container.alpha = eased;
-                        };
-                        app.ticker.add(animateIn);
-                        onEventComplete();
+                        // SILENT MODE: React Overlay handles the visuals.
+                        // We just wait here to keep the sequence timing in sync.
+                        console.log("[VisualDirector] CUT_IN_START (Silent Wait)");
+                        setTimeout(onEventComplete, 2200);
                         break;
                     }
 
                     case 'CUT_IN_END': {
-                        const container = layers.ui.children[0];
-                        if (container) {
-                            let progress = 0;
-                            const animateOut = () => {
-                                progress += 0.1;
-                                container.alpha = 1 - progress;
-                                container.scale.y = 1 - progress;
-                                if (progress >= 1) {
-                                    layers.ui.removeChildren();
-                                    app.ticker.remove(animateOut);
-                                    onEventComplete();
-                                }
-                            };
-                            app.ticker.add(animateOut);
-                        } else {
-                            onEventComplete();
-                        }
+                        // Nothing to clean up
+                        onEventComplete();
                         break;
                     }
 

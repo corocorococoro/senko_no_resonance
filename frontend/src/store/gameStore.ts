@@ -117,6 +117,7 @@ interface GameState {
     floor: number;
     phase: GamePhase;
     glimmerActive: boolean;
+    logs: string[]; // Added logs
     lastDamage: { value: number; timestamp: number; isResonance?: boolean } | null;
     lastResonance: { name: string; count: number; timestamp: number } | null;
 
@@ -172,7 +173,7 @@ interface GameState {
 
     // v2 Battle Actions
     damageEnemy: (amount: number, isResonance?: boolean) => void;
-    executeTurn: () => { isResonance: boolean; skillName: string; damage: number; participants: number[] } | null;
+    executeTurn: () => { isResonance: boolean; skillName: string; damage: number; participants: number[]; actorName: string } | null;
 }
 
 const DEFAULT_BATTLE_STATE: BattleState = {
@@ -189,6 +190,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     glimmerActive: false,
     lastDamage: null,
     lastResonance: null,
+    logs: [], // Initialize
     stats: {
         totalDamage: 0,
         maxDamage: 0,
@@ -216,6 +218,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         },
         {
             id: 2,
+            seed: 67890,
             name: 'Mage',
             job: 'Mage', // Default
             stats: { qui: 40, combo_rate: 10 },
@@ -225,6 +228,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         },
         {
             id: 3,
+            seed: 13579,
             name: 'Monk',
             job: 'Monk', // Default
             stats: { qui: 90, combo_rate: 5 },
@@ -283,10 +287,10 @@ export const useGameStore = create<GameState>((set, get) => ({
                 return { masterArts: artMap };
             });
 
-            get().addLog('System: Skills data loaded v2.');
+            // get().addLog('System: Skills data loaded v2.');
         } catch (e) {
             console.error('Failed to fetch arts', e);
-            get().addLog('System: Failed to load skills data.');
+            // get().addLog('System: Failed to load skills data.');
         }
     },
 
@@ -315,6 +319,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 
                     return {
                         id: d.id,
+                        seed: d.seed || (d.id * 12345), // Fallback seed
                         name: d.name,
                         job: d.job,
                         job_id: d.job_id,
@@ -326,10 +331,10 @@ export const useGameStore = create<GameState>((set, get) => ({
                 });
                 return { party: newParty };
             });
-            get().addLog('System: Party data loaded from persistence.');
+            // get().addLog('System: Party data loaded from persistence.');
         } catch (e) {
             console.error('Failed to fetch party', e);
-            get().addLog('System: Failed to load party data.');
+            // get().addLog('System: Failed to load party data.');
         }
     },
 
@@ -501,7 +506,9 @@ export const useGameStore = create<GameState>((set, get) => ({
 
     addLog: (message) => {
         console.log(`[LOG] ${message}`);
-        // No updates to state.logs
+        set(state => ({
+            logs: [...state.logs, message].slice(-50) // Keep last 50
+        }));
     },
 
     setGlimmerActive: (active) => {
@@ -557,6 +564,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     initBattleState: () => {
         const { masterArts } = get();
         set(state => ({
+            logs: [], // Clear logs on new battle
             party: state.party.map(p => {
                 const charges: Record<string, any> = {};
                 p.learnedArts.forEach(skillId => {
@@ -861,7 +869,8 @@ export const useGameStore = create<GameState>((set, get) => ({
             isResonance,
             skillName,
             damage,
-            participants: participants.map(p => p.id)
+            participants: participants.map(p => p.id),
+            actorName: leader.name
         };
     }
 }));

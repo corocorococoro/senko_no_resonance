@@ -1,0 +1,309 @@
+[
+    {
+        "id": "mercenary",
+        "name_jp": "傭兵",
+        "name_en": "Mercenary",
+        "role": "Attacker",
+        "weapon_type": "Greatsword",
+        "stat_bias": {
+            "str": 1.5,
+            "vit": 1.2
+        },
+        "initial_skills": [
+            "basic_smash",
+            "ground_breaker"
+        ]
+    },
+    {
+        "id": "fencer",
+        "name_jp": "剣士",
+        "name_en": "Fencer",
+        "role": "Attacker",
+        "weapon_type": "Sword",
+        "stat_bias": {
+            "dex": 1.4,
+            "agi": 1.2
+        },
+        "initial_skills": [
+            "basic_slash",
+            "cross_cut",
+            "sonic_blade",
+            "basic_iai"
+        ]
+    },
+    {
+        "id": "monk",
+        "name_jp": "武闘家",
+        "name_en": "Monk",
+        "role": "Attacker",
+        "weapon_type": "Fist",
+        "stat_bias": {
+            "agi": 1.5,
+            "str": 1.1
+        },
+        "initial_skills": [
+            "basic_punch",
+            "lightning_kick",
+            "aura_blast"
+        ]
+    },
+    {
+        "id": "paladin",
+        "name_jp": "聖騎士",
+        "name_en": "Paladin",
+        "role": "Tank",
+        "weapon_type": "Sword/Shield",
+        "stat_bias": {
+            "vit": 1.5,
+            "spi": 1.2
+        },
+        "initial_skills": [
+            "basic_slash",
+            "cross_cut",
+            "holy_light"
+        ]
+    },
+    {
+        "id": "mage",
+        "name_jp": "魔術師",
+        "name_en": "Mage",
+        "role": "Magic",
+        "weapon_type": "Staff",
+        "stat_bias": {
+            "int_stat": 1.5,
+            "mp": 1.4
+        },
+        "initial_skills": [
+            "basic_fire",
+            "ice_needle",
+            "lightning_bolt",
+            "shadow_ball"
+        ]
+    },
+    {
+        "id": "cleric",
+        "name_jp": "僧侶",
+        "name_en": "Cleric",
+        "role": "Healer",
+        "weapon_type": "Mace",
+        "stat_bias": {
+            "spi": 1.5,
+            "mp": 1.3
+        },
+        "initial_skills": [
+            "holy_light",
+            "basic_smash"
+        ]
+    },
+    {
+        "id": "ranger",
+        "name_jp": "狩人",
+        "name_en": "Ranger",
+        "role": "Ranged",
+        "weapon_type": "Bow",
+        "stat_bias": {
+            "dex": 1.3,
+            "qui": 1.3
+        },
+        "initial_skills": [
+            "power_shot",
+            "rapid_fire"
+        ]
+    },
+    {
+        "id": "ninja",
+        "name_jp": "密偵",
+        "name_en": "Ninja",
+        "role": "Tech",
+        "weapon_type": "Katana/Kunai",
+        "stat_bias": {
+            "agi": 1.6,
+            "dex": 1.2
+        },
+        "initial_skills": [
+            "basic_iai",
+            "shadow_stitch",
+            "trick_step"
+        ]
+    },
+    {
+        "id": "heavy_knight",
+        "name_jp": "重装兵",
+        "name_en": "Heavy Knight",
+        "role": "Tank",
+        "weapon_type": "Axe",
+        "stat_bias": {
+            "vit": 1.6,
+            "str": 1.3
+        },
+        "initial_skills": [
+            "tomahawk",
+            "basic_smash"
+        ]
+    },
+    {
+        "id": "samurai",
+        "name_jp": "侍",
+        "name_en": "Samurai",
+        "role": "Attacker",
+        "weapon_type": "Katana",
+        "stat_bias": {
+            "str": 1.4,
+            "dex": 1.2
+        },
+        "initial_skills": [
+            "basic_iai",
+            "helm_split_k",
+            "basic_slash"
+        ]
+    },
+    {
+        "id": "dragoon",
+        "name_jp": "竜騎士",
+        "name_en": "Dragoon",
+        "role": "Attacker",
+        "weapon_type": "Spear",
+        "stat_bias": {
+            "str": 1.3,
+            "agi": 1.3
+        },
+        "initial_skills": [
+            "spear_thrust",
+            "dragoon_dive"
+        ]
+    },
+    {
+        "id": "onmyoji",
+        "name_jp": "陰陽師",
+        "name_en": "Onmyoji",
+        "role": "Buffer",
+        "weapon_type": "Talisman",
+        "stat_bias": {
+            "int_stat": 1.3,
+            "spi": 1.4
+        },
+        "initial_skills": [
+            "holy_light",
+            "shadow_ball"
+        ]
+    },
+    {
+        "id": "gunner",
+        "name_jp": "銃士",
+        "name_en": "Gunner",
+        "role": "Ranged",
+        "weapon_type": "Rifle",
+        "stat_bias": {
+            "dex": 1.6
+        },
+        "initial_skills": [
+            "aim_shot",
+            "grenade_shot"
+        ]
+    },
+    {
+        "id": "bard",
+        "name_jp": "吟遊詩人",
+        "name_en": "Bard",
+        "role": "Support",
+        "weapon_type": "Instrument",
+        "stat_bias": {
+            "qui": 1.4
+        },
+        "initial_skills": [
+            "basic_trust",
+            "holy_light"
+        ]
+    },
+    {
+        "id": "dancer",
+        "name_jp": "踊り子",
+        "name_en": "Dancer",
+        "role": "Support",
+        "weapon_type": "Fan",
+        "stat_bias": {
+            "agi": 1.4
+        },
+        "initial_skills": [
+            "basic_punch",
+            "lightning_kick"
+        ]
+    },
+    {
+        "id": "chronomancer",
+        "name_jp": "時魔道士",
+        "name_en": "Chronomancer",
+        "role": "Magic",
+        "weapon_type": "Time Piece",
+        "stat_bias": {
+            "int_stat": 1.4,
+            "qui": 1.4
+        },
+        "initial_skills": [
+            "shadow_ball",
+            "basic_trust"
+        ]
+    },
+    {
+        "id": "assassin",
+        "name_jp": "暗殺者",
+        "name_en": "Assassin",
+        "role": "Tech",
+        "weapon_type": "Dagger",
+        "stat_bias": {
+            "agi": 1.4,
+            "dex": 1.4
+        },
+        "initial_skills": [
+            "basic_trust",
+            "shadow_stitch",
+            "trick_step"
+        ]
+    },
+    {
+        "id": "machinist",
+        "name_jp": "機工士",
+        "name_en": "Machinist",
+        "role": "Tech",
+        "weapon_type": "Tool",
+        "stat_bias": {
+            "dex": 1.3,
+            "int_stat": 1.3
+        },
+        "initial_skills": [
+            "aim_shot",
+            "grenade_shot"
+        ]
+    },
+    {
+        "id": "summoner",
+        "name_jp": "召喚士",
+        "name_en": "Summoner",
+        "role": "Magic",
+        "weapon_type": "Book",
+        "stat_bias": {
+            "mp": 1.8
+        },
+        "initial_skills": [
+            "basic_fire",
+            "ice_needle",
+            "lightning_bolt"
+        ]
+    },
+    {
+        "id": "adventurer",
+        "name_jp": "冒険者",
+        "name_en": "Adventurer",
+        "role": "Jack-of-all",
+        "weapon_type": "Any",
+        "stat_bias": {
+            "hp": 1.2,
+            "mp": 1.2
+        },
+        "initial_skills": [
+            "basic_slash",
+            "basic_punch",
+            "basic_fire"
+        ]
+    }
+]

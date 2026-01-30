@@ -2,7 +2,7 @@ import express from 'express';
 import mysql from 'mysql2/promise';
 import fs from 'fs';
 import path from 'path';
-import { SKILL_DEFINITIONS } from './data/skills';
+// import { SKILL_DEFINITIONS } from './data/skills'; // Removed
 
 const app = express();
 const port = 8080;
@@ -144,30 +144,31 @@ app.post('/api/seed_db', async (req, res) => {
     const count = (existingJobs as any[])[0].count;
 
     if (count === 0) {
-      console.log('Inserting default jobs...');
-      await connection.query(`
-            INSERT INTO jobs (id, name_jp, name_en, role, weapon_type, stat_bias) VALUES
-            ('mercenary', '傭兵', 'Mercenary', 'Attacker', 'Greatsword', '{"str": 1.5, "vit": 1.2}'),
-            ('fencer', '剣士', 'Fencer', 'Attacker', 'Sword', '{"dex": 1.4, "agi": 1.2}'),
-            ('monk', '武闘家', 'Monk', 'Attacker', 'Fist', '{"agi": 1.5, "str": 1.1}'),
-            ('paladin', '聖騎士', 'Paladin', 'Tank', 'Sword/Shield', '{"vit": 1.5, "spi": 1.2}'),
-            ('mage', '魔術師', 'Mage', 'Magic', 'Staff', '{"int_stat": 1.5, "mp": 1.4}'),
-            ('cleric', '僧侶', 'Cleric', 'Healer', 'Mace', '{"spi": 1.5, "mp": 1.3}'),
-            ('ranger', '狩人', 'Ranger', 'Ranged', 'Bow', '{"dex": 1.3, "qui": 1.3}'),
-            ('ninja', '密偵', 'Ninja', 'Tech', 'Katana/Kunai', '{"agi": 1.6, "dex": 1.2}'),
-            ('heavy_knight', '重装兵', 'Heavy Knight', 'Tank', 'Axe', '{"vit": 1.6, "str": 1.3}'),
-            ('samurai', '侍', 'Samurai', 'Attacker', 'Katana', '{"str": 1.4, "dex": 1.2}'),
-            ('dragoon', '竜騎士', 'Dragoon', 'Attacker', 'Spear', '{"str": 1.3, "agi": 1.3}'),
-            ('onmyoji', '陰陽師', 'Onmyoji', 'Buffer', 'Talisman', '{"int_stat": 1.3, "spi": 1.4}'),
-            ('gunner', '銃士', 'Gunner', 'Ranged', 'Rifle', '{"dex": 1.6}'),
-            ('bard', '吟遊詩人', 'Bard', 'Support', 'Instrument', '{"qui": 1.4}'),
-            ('dancer', '踊り子', 'Dancer', 'Support', 'Fan', '{"agi": 1.4}'),
-            ('chronomancer', '時魔道士', 'Chronomancer', 'Magic', 'Time Piece', '{"int_stat": 1.4, "qui": 1.4}'),
-            ('assassin', '暗殺者', 'Assassin', 'Tech', 'Dagger', '{"agi": 1.4, "dex": 1.4}'),
-            ('machinist', '機工士', 'Machinist', 'Tech', 'Tool', '{"dex": 1.3, "int_stat": 1.3}'),
-            ('summoner', '召喚士', 'Summoner', 'Magic', 'Book', '{"mp": 1.8}'),
-            ('adventurer', '冒険者', 'Adventurer', 'Jack-of-all', 'Any', '{"hp": 1.2, "mp": 1.2}')
-        `);
+      console.log('Inserting default jobs from JSON...');
+      // Load Jobs from JSON
+      const jobsPath = path.join(__dirname, 'resources', 'jobs.json');
+      const jobsData = JSON.parse(fs.readFileSync(jobsPath, 'utf-8'));
+
+      const values = jobsData.map((job: any) => [
+        job.id, job.name_jp, job.name_en, job.role, job.weapon_type, JSON.stringify(job.stat_bias), JSON.stringify(job.initial_skills || [])
+      ]);
+
+      // Add column if not exists (Hack for migration) - simplified: assuming schema handles it or we use JSON in memory for now.
+      // Actually, we don't need to store initial_skills in DB jobs table if we only use it for seeding characters.
+      // But wait, we iterate over `selectedJobs` later. `selectedJobs` comes from DB query.
+      // So we DO need to persist it or re-read it.
+      // For simplicity in this "Seed" context: I will just re-read the JSON to find the skills for the selected jobs, 
+      // OR I can add a column. Adding a column is cleaner for future.
+      // Let's add the column `initial_skills` to `jobs` table.
+
+      try {
+        await connection.query('ALTER TABLE jobs ADD COLUMN initial_skills JSON');
+      } catch (e) { /* ignore if exists */ }
+
+      await connection.query(
+        'INSERT INTO jobs (id, name_jp, name_en, role, weapon_type, stat_bias, initial_skills) VALUES ?',
+        [values]
+      );
     }
 
     // --- POPULATE ARTS TABLE FROM SKILL_DEFINITIONS ---
@@ -181,7 +182,11 @@ app.post('/api/seed_db', async (req, res) => {
     await connection.query('SET FOREIGN_KEY_CHECKS = 1');
 
     // Insert Skills
-    for (const skill of SKILL_DEFINITIONS) {
+    // Insert Skills
+    const skillsPath = path.join(__dirname, 'resources', 'skills.json');
+    const skillsData = JSON.parse(fs.readFileSync(skillsPath, 'utf-8'));
+
+    for (const skill of skillsData) {
       await connection.query(`
             INSERT INTO arts 
             (skill_id, name_jp, name_en, description, base_power, attribute, system_type, mp_cost, bp_cost, target_type, 
@@ -242,13 +247,8 @@ app.post('/api/seed_db', async (req, res) => {
     console.log('Selected Jobs:', selectedJobs.map(j => j.name_en));
 
     // 5. Create Characters
-    const names = [
-      "Claude", "Rena", "Celine", "Bowman", "Dias", "Precis", "Ashton", "Leon", "Noel", "Chisato", "Opera", "Ernest",
-      "Fayt", "Sophia", "Cliff", "Maria", "Nel", "Albel", "Roger", "Peppita", "Mirage", "Adray",
-      "Roddick", "Ilia", "Ronyx", "Millie", "Cyuss", "Ashlay", "Phia", "Ioshua", "Mavelle", "Pericci",
-      "Edge", "Reimi", "Faize", "Lymle", "Bacchus", "Meracle", "Myuria", "Arumat", "Sarah",
-      "Fidel", "Miki", "Victor", "Fiore", "Emmerson", "Anne", "Relia"
-    ];
+    const namesPath = path.join(__dirname, 'resources', 'names.json');
+    const names = JSON.parse(fs.readFileSync(namesPath, 'utf-8'));
 
     const shuffledNames = names.sort(() => 0.5 - Math.random());
 
@@ -284,67 +284,26 @@ app.post('/api/seed_db', async (req, res) => {
     const [arts] = await connection.query('SELECT id, skill_id FROM arts');
     const artMap = (arts as any[]).reduce((acc, art) => ({ ...acc, [art.skill_id]: art.id }), {});
 
-    // Updated Mapping: Job/Weapon -> Skills
-    const weaponSkillMap: Record<string, string[]> = {
-      'Sword': ['basic_slash', 'cross_cut', 'sonic_blade', 'basic_iai'],
-      'Greatsword': ['basic_smash', 'ground_breaker'],
-      'Katana': ['basic_iai', 'helm_split_k', 'basic_slash'],
-      'Dagger': ['basic_trust', 'shadow_stitch', 'trick_step'],
-      'Spear': ['spear_thrust', 'dragoon_dive'],
-      'Axe': ['tomahawk', 'basic_smash'],
-      'Fist': ['basic_punch', 'lightning_kick', 'aura_blast'],
-      'Bow': ['power_shot', 'rapid_fire'],
-      'Rifle': ['aim_shot', 'grenade_shot'],
-      'Staff': ['basic_fire', 'ice_needle', 'lightning_bolt', 'shadow_ball'],
-      'Talisman': ['holy_light', 'shadow_ball'],
-      'Mace': ['holy_light', 'basic_smash'],
-      'Book': ['basic_fire', 'ice_needle', 'lightning_bolt'],
-      'Fan': ['basic_punch', 'lightning_kick'],
-      'Instrument': ['basic_trust', 'holy_light'],
-      'Time Piece': ['shadow_ball', 'basic_trust'],
-      'Tool': ['aim_shot', 'grenade_shot'],
-      'Any': ['basic_slash', 'basic_punch', 'basic_fire'] // Adventurer
-    };
+    // Lookup definition from DB or JSON. Since we might have just inserted, we can read from JSON for guaranteed data.
+    const jobsPath = path.join(__dirname, 'resources', 'jobs.json');
+    const jobsDataForSkills = JSON.parse(fs.readFileSync(jobsPath, 'utf-8'));
+    const jobSkillMap = jobsDataForSkills.reduce((acc: any, job: any) => ({ ...acc, [job.id]: job.initial_skills || [] }), {});
 
-    const robustArtValues = [];
-
+    const charArtsValues: any[] = [];
     for (const char of (chars as any[])) {
-      // Find Character's Weapon Type
-      const job = (jobList as any[]).find(j => j.id === char.job_id);
-      const weapon = job ? job.weapon_type : 'Sword';
+      const skills = jobSkillMap[char.job_id] || ['basic_slash']; // Fallback
 
-      // Handle "Sword/Shield" -> "Sword"
-      const primaryWeapon = weapon.split('/')[0];
-
-      const pool = weaponSkillMap[primaryWeapon] || ['basic_slash'];
-
-      // Give 2 random skills from pool (or all if small)
-      // Ensure at least 1 basic
-      const starers = pool.filter(s => s.startsWith('basic_'));
-      const others = pool.filter(s => !s.startsWith('basic_'));
-
-      // 1. Give 1 Basic
-      if (starers.length > 0) {
-        const pick = starers[Math.floor(Math.random() * starers.length)];
-        if (artMap[pick]) robustArtValues.push([char.id, artMap[pick], 1]);
-      } else {
-        // Fallback
-        if (artMap['basic_slash']) robustArtValues.push([char.id, artMap['basic_slash'], 1]);
-      }
-
-      // 2. Chance to give 2nd skill from full pool
-      if (Math.random() > 0.3 && pool.length > 1) {
-        const pick = pool[Math.floor(Math.random() * pool.length)];
-        const already = robustArtValues.some(v => v[0] === char.id && v[1] === artMap[pick]);
-        if (!already && artMap[pick]) robustArtValues.push([char.id, artMap[pick], 1]);
+      for (const skillId of skills) {
+        if (artMap[skillId]) {
+          charArtsValues.push([char.id, artMap[skillId], 1]);
+        }
       }
     }
 
-    if (robustArtValues.length > 0) {
-      // Use INSERT IGNORE to handle dupes safely
+    if (charArtsValues.length > 0) {
       await connection.query(
-        'INSERT IGNORE INTO character_arts (character_id, art_id, mastery_level) VALUES ?',
-        [robustArtValues]
+        'INSERT INTO character_arts (character_id, art_id, mastery_level) VALUES ?',
+        [charArtsValues]
       );
     }
 

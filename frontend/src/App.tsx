@@ -2,6 +2,7 @@ import { MobileContainer } from './components/MobileContainer';
 import { BattleStage } from './components/BattleStage/BattleStage';
 import { GameUI } from './components/GameUI';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { BattleLog } from './components/BattleLog';
 import { useGameStore } from './store/gameStore';
 import { useEffect } from 'react';
 
@@ -136,6 +137,7 @@ function App() {
           <>
             <BattleStage />
             <GameUI />
+            <BattleLog />
           </>
         )}
         {phase === 'RESULT' && <ResultScreen />}
