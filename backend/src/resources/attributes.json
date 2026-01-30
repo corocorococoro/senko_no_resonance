@@ -1,0 +1,47 @@
+[
+    {
+        "key": "斬",
+        "name_jp": "斬",
+        "type": "physical"
+    },
+    {
+        "key": "突",
+        "name_jp": "突",
+        "type": "physical"
+    },
+    {
+        "key": "打",
+        "name_jp": "打",
+        "type": "physical"
+    },
+    {
+        "key": "風",
+        "name_jp": "風",
+        "type": "magic"
+    },
+    {
+        "key": "火",
+        "name_jp": "火",
+        "type": "magic"
+    },
+    {
+        "key": "氷",
+        "name_jp": "氷",
+        "type": "magic"
+    },
+    {
+        "key": "雷",
+        "name_jp": "雷",
+        "type": "magic"
+    },
+    {
+        "key": "光",
+        "name_jp": "光",
+        "type": "magic"
+    },
+    {
+        "key": "闇",
+        "name_jp": "闇",
+        "type": "magic"
+    }
+]

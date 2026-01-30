@@ -54,6 +54,36 @@ app.get('/api/arts', async (req, res) => {
   }
 });
 
+// Get Weapon Types
+app.get('/api/weapon_types', async (req, res) => {
+  try {
+    const data = fs.readFileSync(path.join(__dirname, 'resources', 'weapon_types.json'), 'utf8');
+    res.json(JSON.parse(data));
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get Attributes
+app.get('/api/attributes', async (req, res) => {
+  try {
+    const data = fs.readFileSync(path.join(__dirname, 'resources', 'attributes.json'), 'utf8');
+    res.json(JSON.parse(data));
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get Constants
+app.get('/api/constants', async (req, res) => {
+  try {
+    const data = fs.readFileSync(path.join(__dirname, 'resources', 'constants.json'), 'utf8');
+    res.json(JSON.parse(data));
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Get Current Party
 app.get('/api/party', async (req, res) => {
   try {
@@ -84,26 +114,38 @@ app.get('/api/party', async (req, res) => {
       return acc;
     }, {});
 
-    const party = characterList.map(c => ({
-      id: c.id,
-      name: c.name,
-      job: c.job,
-      job_id: c.job_id,
-      stats: {
-        qui: c.qui,
-        combo_rate: c.combo_rate,
-        str: c.str,
-        vit: c.vit,
-        dex: c.dex,
-        agi: c.agi,
-        int_stat: c.int_stat,
-        spi: c.spi,
-        hp: c.hp,
-        mp: c.mp
-      },
-      currentArtId: artsMap[c.id]?.[0] || 'basic_slash',
-      learnedArts: artsMap[c.id] || []
-    }));
+    // Load Jobs for stat calculation
+    const jobsData = fs.readFileSync(path.join(__dirname, 'resources', 'jobs.json'), 'utf8');
+    const jobs = JSON.parse(jobsData);
+    const jobMap = jobs.reduce((acc: any, j: any) => { acc[j.id] = j; return acc; }, {});
+
+    const party = characterList.map(c => {
+      const job = jobMap[c.job_id] || jobMap[(c.job || '').toLowerCase()] || {};
+      const bias = job.stat_bias || {};
+      const level = c.level || 1;
+      const base = 10;
+
+      return {
+        id: c.id,
+        name: c.name,
+        job: c.job,
+        job_id: c.job_id,
+        stats: {
+          qui: Math.floor(base * (bias.qui || 1.0) * level),
+          combo_rate: c.combo_rate,
+          str: Math.floor(base * (bias.str || 1.0) * level),
+          vit: Math.floor(base * (bias.vit || 1.0) * level),
+          dex: Math.floor(base * (bias.dex || 1.0) * level),
+          agi: Math.floor(base * (bias.agi || 1.0) * level),
+          int_stat: Math.floor(base * (bias.int_stat || 1.0) * level),
+          spi: Math.floor(base * (bias.spi || 1.0) * level),
+          hp: c.hp,
+          mp: c.mp
+        },
+        currentArtId: artsMap[c.id]?.[0] || 'basic_slash',
+        learnedArts: artsMap[c.id] || []
+      };
+    });
 
     await connection.end();
     res.json(party);
@@ -210,6 +252,12 @@ app.post('/api/seed_db', async (req, res) => {
 
     // --- POPULATE ARTS TABLE FROM SKILL_DEFINITIONS ---
     console.log('Seeding Arts Table...');
+
+    // Ensure column exists
+    try {
+      await connection.query('ALTER TABLE arts ADD COLUMN inspiration_source JSON');
+    } catch (e) { /* ignore */ }
+
     // Wipe characters & Arts manually
     // Use FK disable to ensure clean drop even if circular deps exist
     await connection.query('SET FOREIGN_KEY_CHECKS = 0');
@@ -227,15 +275,16 @@ app.post('/api/seed_db', async (req, res) => {
       await connection.query(`
             INSERT INTO arts 
             (skill_id, name_jp, name_en, description, base_power, attribute, system_type, mp_cost, bp_cost, target_type, 
-             combo, visual_effect_instruction, sound_effect_instruction, ai_tags)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             combo, visual_effect_instruction, sound_effect_instruction, ai_tags, inspiration_source)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
         skill.skill_id, skill.name_jp, skill.name_en, skill.description,
         skill.base_power, skill.attribute, skill.system_type,
         skill.mp_cost, skill.bp_cost, skill.target_type,
         JSON.stringify(skill.combo),
         skill.visual_effect_instruction, skill.sound_effect_instruction,
-        JSON.stringify(skill.ai_tags)
+        JSON.stringify(skill.ai_tags),
+        JSON.stringify(skill.inspiration_source || [])
       ]);
     }
 

@@ -266,7 +266,8 @@ export const BattleStage: React.FC = () => {
             actorId: 1,
             skillName: turnResult.skillName,
             isResonance: turnResult.isResonance,
-            actorName: turnResult.actorName
+            actorName: turnResult.actorName,
+            damage: turnResult.damage // Pass real damage
         };
 
         const record = BattleSolver.resolveTurn(mockState, mockCommand);

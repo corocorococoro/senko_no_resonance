@@ -13,7 +13,7 @@ export const BattleLog: React.FC = () => {
     }, [logs]);
 
     return (
-        <div style={{
+        <div ref={scrollRef} style={{
             position: 'absolute',
             bottom: '80px', // Above the "Advance" button area if any, or just bottom
             left: '50%',
@@ -29,10 +29,7 @@ export const BattleLog: React.FC = () => {
             padding: '10px',
             overflowY: 'auto',
             zIndex: 100, // Below critical popups
-            pointerEvents: 'none', // Allow clicks to pass through if necessary, but scroll needs events?
-            // Actually if we want scroll, pointerEvents must be auto.
-            // But user said "Auto scroll", so maybe pass through is better if it covers buttons?
-            // For now, let's keep pointerEvents auto so they CAN scroll if they really want to check history.
+            pointerEvents: 'auto', // Allow scrolling
             display: 'flex',
             flexDirection: 'column',
             gap: '4px',
@@ -47,7 +44,6 @@ export const BattleLog: React.FC = () => {
                     {log}
                 </div>
             ))}
-            <div ref={scrollRef} />
         </div>
     );
 };

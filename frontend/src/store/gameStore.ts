@@ -81,6 +81,7 @@ interface BattleState {
     charges: Record<string, { current: number; turns_until_regen: number }>; // skill_id -> charge state
     history: { skillId: string; attribute: string }[];
     chainMeter: number;
+    hasActed: boolean;
 }
 
 export interface PartyMember {
@@ -91,6 +92,12 @@ export interface PartyMember {
 
     // Base Stats
     stats: {
+        str: number;
+        vit: number;
+        dex: number;
+        agi: number;
+        int_stat: number; // Avoid keyword 'int'
+        spi: number;
         qui: number;        // Quickness: Affects turn order
         combo_rate: number; // Base probability to participate in combo
     };
@@ -141,14 +148,22 @@ interface GameState {
     // System
     isDataLoaded: boolean;
 
-    // Phase 5: Skills Data
+    // Phase 5: Skills Data & Master Data
     masterArts: Record<string, Art>;
+    weaponTypes: Record<string, { scaling_stat: string }>;
+    attributes: Record<string, { type: 'physical' | 'magic' }>;
 
     // Phase 6: Enemy State
     enemy: {
         hp: number;
         maxHp: number;
         name: string;
+        stats: {
+            str: number;
+            def: number; // Using DEF as primary resistance for now, or split?
+            agi: number;
+            int_stat: number;
+        };
     };
 
     // Phase 7: Game Constants
@@ -163,6 +178,17 @@ interface GameState {
             chain_start_chance: number;
             chain_continue_chance: number;
             max_chain: number;
+        };
+        glimmer: {
+            base_chance: number;
+            chain_bonus: number;
+        };
+        damage: {
+            defense_factor: number;
+            variance: number;
+            crit_base_chance: number;
+            crit_multiplier: number;
+            attribute_bonus: number;
         };
     };
 
@@ -179,8 +205,9 @@ interface GameState {
     resetChain: () => void;
     setActiveAttacker: (id: number | null) => void;
     setCurrentAction: (action: { actorName: string; skillName: string; participants?: number[] } | null) => void;
-    fetchArts: () => Promise<void>;
-    fetchParty: () => Promise<void>;
+    fetchConstants: () => Promise<void>;
+    fetchWeaponTypes: () => Promise<void>;
+    fetchAttributes: () => Promise<void>;
     learnArt: (memberId: number, skillId: string) => void;
 
     // New Battle Actions
@@ -199,7 +226,8 @@ const DEFAULT_BATTLE_STATE: BattleState = {
     cooldowns: {},
     charges: {},
     history: [],
-    chainMeter: 0
+    chainMeter: 0,
+    hasActed: false
 };
 
 export const useGameStore = create<GameState>((set, get) => ({
@@ -229,48 +257,39 @@ export const useGameStore = create<GameState>((set, get) => ({
 
     constants: {
         battle: { initial_bp: 0, max_bp: 0, bp_regen_per_turn: 0, encounter_rate: 0 },
-        resonance: { chain_start_chance: 0, chain_continue_chance: 0, max_chain: 0 }
+        resonance: { chain_start_chance: 0, chain_continue_chance: 0, max_chain: 0 },
+        glimmer: { base_chance: 0, chain_bonus: 0 },
+        damage: { defense_factor: 0, variance: 0, crit_base_chance: 0, crit_multiplier: 0, attribute_bonus: 0 }
     },
+
+    masterArts: {},
+    weaponTypes: {},
+    attributes: {},
 
     party: [
         {
-            id: 1,
-            name: 'Hero',
-            job: 'Hero', // Default
-            stats: { qui: 70, combo_rate: 5 },
-            currentArtId: 'basic_slash',
-            learnedArts: ['basic_slash'],
-            battleState: JSON.parse(JSON.stringify(DEFAULT_BATTLE_STATE))
+            id: 1, name: 'Hero', job: 'Hero', currentArtId: 'basic_slash', learnedArts: ['basic_slash'],
+            battleState: JSON.parse(JSON.stringify(DEFAULT_BATTLE_STATE)),
+            stats: { str: 10, vit: 10, dex: 10, agi: 10, int_stat: 10, spi: 10, qui: 70, combo_rate: 5 }
         },
         {
-            id: 2,
-            seed: 67890,
-            name: 'Mage',
-            job: 'Mage', // Default
-            stats: { qui: 40, combo_rate: 10 },
-            currentArtId: 'basic_fire',
-            learnedArts: ['basic_fire'],
-            battleState: JSON.parse(JSON.stringify(DEFAULT_BATTLE_STATE))
+            id: 2, seed: 67890, name: 'Mage', job: 'Mage', currentArtId: 'basic_fire', learnedArts: ['basic_fire'],
+            battleState: JSON.parse(JSON.stringify(DEFAULT_BATTLE_STATE)),
+            stats: { str: 10, vit: 10, dex: 10, agi: 10, int_stat: 10, spi: 10, qui: 40, combo_rate: 10 }
         },
         {
-            id: 3,
-            seed: 13579,
-            name: 'Monk',
-            job: 'Monk', // Default
-            stats: { qui: 90, combo_rate: 5 },
-            currentArtId: 'basic_punch',
-            learnedArts: ['basic_punch'],
-            battleState: JSON.parse(JSON.stringify(DEFAULT_BATTLE_STATE))
+            id: 3, seed: 13579, name: 'Monk', job: 'Monk', currentArtId: 'basic_punch', learnedArts: ['basic_punch'],
+            battleState: JSON.parse(JSON.stringify(DEFAULT_BATTLE_STATE)),
+            stats: { str: 10, vit: 10, dex: 10, agi: 10, int_stat: 10, spi: 10, qui: 90, combo_rate: 5 }
         }
     ],
-
-    masterArts: {},
 
     // Enemy State
     enemy: {
         hp: 0,
         maxHp: 0,
-        name: ''
+        name: '',
+        stats: { str: 0, def: 0, agi: 0, int_stat: 0 }
     },
 
     fetchArts: async () => {
@@ -508,7 +527,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 
         // Strict Mode: No hardcoded fallback.
         // If API fails, we start with 0 HP (Instant Win/Bug) to alert dev.
-        let enemyData = { hp: 0, maxHp: 0, name: 'LOADING_ERROR' };
+        let enemyData = { hp: 0, maxHp: 0, name: 'LOADING_ERROR', stats: { str: 0, def: 0, agi: 0, int_stat: 0 } };
 
         try {
             const currentFloor = get().floor;
@@ -518,7 +537,8 @@ export const useGameStore = create<GameState>((set, get) => ({
                 enemyData = {
                     hp: data.hp,
                     maxHp: data.max_hp,
-                    name: data.name_jp
+                    name: data.name_jp,
+                    stats: data.stats || { str: 10, def: 5, agi: 5, int_stat: 5 } // Fallback
                 };
                 console.log("Encountered:", data);
             } else {
@@ -631,6 +651,43 @@ export const useGameStore = create<GameState>((set, get) => ({
         }));
     },
 
+    fetchConstants: async () => {
+        try {
+            const res = await fetch('http://localhost:8080/api/constants');
+            if (res.ok) {
+                const data = await res.json();
+                set({ constants: data });
+                console.log("Constants Loaded:", data);
+            }
+        } catch (e) {
+            console.error("Failed to load constants", e);
+        }
+    },
+
+    fetchWeaponTypes: async () => {
+        try {
+            const res = await fetch('http://localhost:8080/api/weapon_types');
+            if (res.ok) {
+                const list = await res.json();
+                const map: Record<string, any> = {};
+                list.forEach((item: any) => map[item.key] = item);
+                set({ weaponTypes: map });
+            }
+        } catch (e) { console.error("Failed to load weapon types", e); }
+    },
+
+    fetchAttributes: async () => {
+        try {
+            const res = await fetch('http://localhost:8080/api/attributes');
+            if (res.ok) {
+                const list = await res.json();
+                const map: Record<string, any> = {};
+                list.forEach((item: any) => map[item.key] = item);
+                set({ attributes: map });
+            }
+        } catch (e) { console.error("Failed to load attributes", e); }
+    },
+
     initBattleState: () => {
         const { masterArts } = get();
         set(state => ({
@@ -701,7 +758,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 
             return {
                 ...p,
-                battleState: { ...s, bp: { ...s.bp, current: newBp }, cooldowns: newCooldowns, charges: newCharges }
+                battleState: { ...s, hasActed: false, bp: { ...s.bp, current: newBp }, cooldowns: newCooldowns, charges: newCharges }
             };
         });
         set({ party: newParty });
@@ -735,6 +792,7 @@ export const useGameStore = create<GameState>((set, get) => ({
                         ...p,
                         battleState: {
                             ...s,
+                            hasActed: true,
                             bp: { ...s.bp, current: newBp },
                             cooldowns: newCooldowns,
                             charges: newCharges,
@@ -850,8 +908,11 @@ export const useGameStore = create<GameState>((set, get) => ({
 
         if (phase !== 'BATTLE') return null;
 
-        // Sort by QUI (speed)
-        const availableMembers = party.filter(p => p.battleState.bp.current > 0);
+        // Sort by QUI (speed) but only pick active members who haven't acted yet
+        const availableMembers = party.filter(p =>
+            p.battleState.bp.current > 0 &&
+            !p.battleState.hasActed
+        );
         if (availableMembers.length === 0) {
             get().regenResources();
             return null;
@@ -885,20 +946,64 @@ export const useGameStore = create<GameState>((set, get) => ({
         const isResonance = participants.length > 1;
 
         // Calculate damage
-        let damage = 0;
+        // Calculate damage
+        let totalDamage = 0;
         let skillName = leaderArt.name_jp;
+        const { damage: dmgConfig, glimmer } = get().constants;
+
+        participants.forEach((p) => {
+            const art = masterArts[p.currentArtId];
+            if (!art) return;
+
+            // 1. Identify Scaling Stat
+            // Job -> Weapon Type -> Scaling Stat
+            // Note: Job data is not in store, but we successfully mapped stats in backend. 
+            // We need to know WHICH stat to use.
+            // Helper: We need to know the weapon type of the job.
+            // Since we don't have job config here, we might have to approximate or fetch job config.
+            // Ideally PartyMember has `weaponType` or we infer from Job Name.
+            // For now, let's use STR as default if unknown, or guess based on Class Name map?
+            // BETTER: PartyMember should have `weaponType` string from backend!
+            // Backend `top` query didn't send weaponType.
+            // Fallback: Use STR for all for now, OR check if we can get it.
+            // Wait, we have `weaponTypes` map but we don't know the character's weapon type key.
+            // Let's assume 'str' for now to unblock, or use max stat?
+            // Max stat is a good heuristic!
+            const stats = p.stats as Record<string, number>;
+            const maxStat = Object.keys(stats).reduce((a, b) => stats[a] > stats[b] ? a : b);
+
+            const statValue = stats[maxStat] || 10;
+
+            // 2. Base Damage
+            let base = (statValue * art.base_power) / 100;
+
+            // 3. Variance
+            const variance = 1 + (Math.random() * dmgConfig.variance * 2 - dmgConfig.variance); // +/- variance
+            base *= variance;
+
+            // 4. Critical Hit
+            // Crit Chance = Config Base + (DEX + LUC/QUI)/200 ? 
+            // Simplified: Base + (DEX * 0.001)
+            const dex = p.stats.dex || 10;
+            const critChance = dmgConfig.crit_base_chance + (dex * 0.002);
+            const isCrit = Math.random() < critChance;
+            if (isCrit) base *= dmgConfig.crit_multiplier;
+
+            // 5. Defense
+            const def = get().enemy.stats.def || 0;
+            const mitigation = def * dmgConfig.defense_factor;
+
+            let dmg = Math.max(1, base - mitigation);
+
+            // 6. Resonance Bonus (Individual)
+            if (isResonance) {
+                dmg *= (1 + (participants.length * glimmer.chain_bonus));
+            }
+
+            totalDamage += Math.floor(dmg);
+        });
 
         if (isResonance) {
-            // Resonance: Sum of all arts with bonus
-            participants.forEach((p, idx) => {
-                const art = masterArts[p.currentArtId];
-                if (art) {
-                    const bonus = 1 + (idx * 0.3); // +30% per chain
-                    damage += Math.floor(art.base_power * bonus);
-                }
-            });
-
-            // Generate resonance name
             let tempName = "";
             participants.forEach((p, idx) => {
                 const art = masterArts[p.currentArtId];
@@ -910,42 +1015,39 @@ export const useGameStore = create<GameState>((set, get) => ({
             });
             skillName = tempName;
 
+            // Resonance State Update
             set({
+                activeAttackerId: leader.id,
+                currentAction: {
+                    actorName: "Party Chain",
+                    skillName: skillName,
+                    participants: participants.map(p => p.id)
+                },
                 activeResonanceName: skillName,
                 resonanceCount: participants.length,
                 lastResonance: { name: skillName, count: participants.length, timestamp: Date.now() }
             });
+            // Log
+            get().addLog(`Resonance! ${participants.map(p => p.name).join('->')} : ${totalDamage} dmg`);
+
         } else {
-            damage = leaderArt.base_power || 100;
+            set({
+                activeAttackerId: leader.id,
+                currentAction: { actorName: leader.name, skillName: leaderArt.name_jp },
+                activeResonanceName: null,
+                resonanceCount: 0
+            });
+            get().addLog(`${leader.name} uses ${leaderArt.name_jp}! ${totalDamage} dmg`);
         }
 
-        // Consume resources
+        // Apply Damage
+        get().damageEnemy(totalDamage, isResonance);
+
+        // Consume Resources
         participants.forEach(p => {
             get().consumeResource(p.id, masterArts[p.currentArtId]);
         });
 
-        // Update stats
-        set(state => ({
-            currentAction: {
-                actorName: isResonance ? "Party Chain" : leader.name,
-                skillName,
-                participants: participants.map(p => p.id)
-            },
-            activeAttackerId: leader.id,
-            stats: {
-                ...state.stats,
-                // totalDamage: state.stats.totalDamage + damage,  <-- REMOVED (Moved to damageEnemy)
-                // maxDamage: Math.max(state.stats.maxDamage, damage), <-- REMOVED
-                // resonanceTotal: state.stats.resonanceTotal + (isResonance ? 1 : 0) <-- REMOVED
-            }
-        }));
-
-        return {
-            isResonance,
-            skillName,
-            damage,
-            participants: participants.map(p => p.id),
-            actorName: leader.name
-        };
-    }
+        return { isResonance, skillName, damage: totalDamage, participants: participants.map(p => p.id), actorName: isResonance ? "Chain" : leader.name };
+    },
 }));

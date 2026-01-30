@@ -6,8 +6,19 @@
         "encounter_rate": 0.4
     },
     "resonance": {
-        "chain_start_chance": 0.3,
-        "chain_continue_chance": 0.3,
+        "chain_start_chance": 0,
+        "chain_continue_chance": 0,
         "max_chain": 5
+    },
+    "glimmer": {
+        "base_chance": 1,
+        "chain_bonus": 0.02
+    },
+    "damage": {
+        "defense_factor": 0.5,
+        "variance": 0.1,
+        "crit_base_chance": 0.05,
+        "crit_multiplier": 1.5,
+        "attribute_bonus": 1.2
     }
 }

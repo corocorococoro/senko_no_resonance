@@ -7,11 +7,14 @@
         "weapon_type": "Greatsword",
         "stat_bias": {
             "str": 1.5,
-            "vit": 1.2
+            "vit": 1.2,
+            "dex": 1.0,
+            "agi": 0.9,
+            "int_stat": 0.8,
+            "spi": 0.8
         },
         "initial_skills": [
-            "basic_smash",
-            "ground_breaker"
+            "basic_smash"
         ]
     },
     {
@@ -21,14 +24,15 @@
         "role": "Attacker",
         "weapon_type": "Sword",
         "stat_bias": {
+            "str": 1.2,
+            "vit": 1.1,
             "dex": 1.4,
-            "agi": 1.2
+            "agi": 1.2,
+            "int_stat": 0.9,
+            "spi": 0.9
         },
         "initial_skills": [
-            "basic_slash",
-            "cross_cut",
-            "sonic_blade",
-            "basic_iai"
+            "basic_slash"
         ]
     },
     {
@@ -38,13 +42,15 @@
         "role": "Attacker",
         "weapon_type": "Fist",
         "stat_bias": {
+            "str": 1.4,
+            "vit": 1.2,
+            "dex": 1.0,
             "agi": 1.5,
-            "str": 1.1
+            "int_stat": 0.7,
+            "spi": 1.0
         },
         "initial_skills": [
-            "basic_punch",
-            "lightning_kick",
-            "aura_blast"
+            "basic_punch"
         ]
     },
     {
@@ -54,13 +60,15 @@
         "role": "Tank",
         "weapon_type": "Sword/Shield",
         "stat_bias": {
+            "str": 1.1,
             "vit": 1.5,
+            "dex": 1.0,
+            "agi": 0.8,
+            "int_stat": 1.0,
             "spi": 1.2
         },
         "initial_skills": [
-            "basic_slash",
-            "cross_cut",
-            "holy_light"
+            "basic_slash"
         ]
     },
     {
@@ -70,8 +78,12 @@
         "role": "Magic",
         "weapon_type": "Staff",
         "stat_bias": {
+            "str": 0.7,
+            "vit": 0.8,
+            "dex": 1.1,
+            "agi": 1.0,
             "int_stat": 1.5,
-            "mp": 1.4
+            "spi": 1.2
         },
         "initial_skills": [
             "basic_fire",
@@ -87,8 +99,12 @@
         "role": "Healer",
         "weapon_type": "Mace",
         "stat_bias": {
-            "spi": 1.5,
-            "mp": 1.3
+            "str": 0.9,
+            "vit": 1.0,
+            "dex": 1.0,
+            "agi": 0.9,
+            "int_stat": 1.2,
+            "spi": 1.5
         },
         "initial_skills": [
             "holy_light",
@@ -102,12 +118,16 @@
         "role": "Ranged",
         "weapon_type": "Bow",
         "stat_bias": {
-            "dex": 1.3,
+            "str": 1.0,
+            "vit": 1.0,
+            "dex": 1.5,
+            "agi": 1.2,
+            "int_stat": 1.0,
+            "spi": 1.0,
             "qui": 1.3
         },
         "initial_skills": [
-            "power_shot",
-            "rapid_fire"
+            "power_shot"
         ]
     },
     {
@@ -117,8 +137,12 @@
         "role": "Tech",
         "weapon_type": "Katana/Kunai",
         "stat_bias": {
+            "str": 1.0,
+            "vit": 0.9,
+            "dex": 1.4,
             "agi": 1.6,
-            "dex": 1.2
+            "int_stat": 1.1,
+            "spi": 0.8
         },
         "initial_skills": [
             "basic_iai",
@@ -133,11 +157,14 @@
         "role": "Tank",
         "weapon_type": "Axe",
         "stat_bias": {
+            "str": 1.5,
             "vit": 1.6,
-            "str": 1.3
+            "dex": 0.9,
+            "agi": 0.6,
+            "int_stat": 0.7,
+            "spi": 0.8
         },
         "initial_skills": [
-            "tomahawk",
             "basic_smash"
         ]
     },
@@ -149,11 +176,13 @@
         "weapon_type": "Katana",
         "stat_bias": {
             "str": 1.4,
-            "dex": 1.2
+            "vit": 1.1,
+            "dex": 1.4,
+            "agi": 1.2,
+            "int_stat": 1.0,
+            "spi": 1.1
         },
         "initial_skills": [
-            "basic_iai",
-            "helm_split_k",
             "basic_slash"
         ]
     },
@@ -164,12 +193,15 @@
         "role": "Attacker",
         "weapon_type": "Spear",
         "stat_bias": {
-            "str": 1.3,
-            "agi": 1.3
+            "str": 1.4,
+            "vit": 1.2,
+            "dex": 1.1,
+            "agi": 1.3,
+            "int_stat": 0.8,
+            "spi": 1.0
         },
         "initial_skills": [
-            "spear_thrust",
-            "dragoon_dive"
+            "spear_thrust"
         ]
     },
     {
@@ -179,7 +211,11 @@
         "role": "Buffer",
         "weapon_type": "Talisman",
         "stat_bias": {
-            "int_stat": 1.3,
+            "str": 0.8,
+            "vit": 0.9,
+            "dex": 1.0,
+            "agi": 1.0,
+            "int_stat": 1.5,
             "spi": 1.4
         },
         "initial_skills": [
@@ -194,7 +230,12 @@
         "role": "Ranged",
         "weapon_type": "Rifle",
         "stat_bias": {
-            "dex": 1.6
+            "str": 0.9,
+            "vit": 1.0,
+            "dex": 1.6,
+            "agi": 1.1,
+            "int_stat": 1.2,
+            "spi": 0.8
         },
         "initial_skills": [
             "aim_shot",
@@ -208,6 +249,12 @@
         "role": "Support",
         "weapon_type": "Instrument",
         "stat_bias": {
+            "str": 0.9,
+            "vit": 0.9,
+            "dex": 1.2,
+            "agi": 1.1,
+            "int_stat": 1.2,
+            "spi": 1.4,
             "qui": 1.4
         },
         "initial_skills": [
@@ -222,11 +269,15 @@
         "role": "Support",
         "weapon_type": "Fan",
         "stat_bias": {
-            "agi": 1.4
+            "str": 0.9,
+            "vit": 0.9,
+            "dex": 1.1,
+            "agi": 1.5,
+            "int_stat": 1.0,
+            "spi": 1.2
         },
         "initial_skills": [
-            "basic_punch",
-            "lightning_kick"
+            "basic_punch"
         ]
     },
     {
@@ -236,8 +287,13 @@
         "role": "Magic",
         "weapon_type": "Time Piece",
         "stat_bias": {
-            "int_stat": 1.4,
-            "qui": 1.4
+            "str": 0.8,
+            "vit": 0.9,
+            "dex": 1.0,
+            "agi": 1.1,
+            "int_stat": 1.5,
+            "spi": 1.2,
+            "qui": 1.5
         },
         "initial_skills": [
             "shadow_ball",
@@ -251,13 +307,15 @@
         "role": "Tech",
         "weapon_type": "Dagger",
         "stat_bias": {
-            "agi": 1.4,
-            "dex": 1.4
+            "str": 1.1,
+            "vit": 1.0,
+            "dex": 1.5,
+            "agi": 1.6,
+            "int_stat": 1.0,
+            "spi": 0.8
         },
         "initial_skills": [
-            "basic_trust",
-            "shadow_stitch",
-            "trick_step"
+            "basic_trust"
         ]
     },
     {
@@ -267,8 +325,12 @@
         "role": "Tech",
         "weapon_type": "Tool",
         "stat_bias": {
-            "dex": 1.3,
-            "int_stat": 1.3
+            "str": 1.0,
+            "vit": 1.1,
+            "dex": 1.5,
+            "agi": 1.0,
+            "int_stat": 1.4,
+            "spi": 0.8
         },
         "initial_skills": [
             "aim_shot",
@@ -282,12 +344,16 @@
         "role": "Magic",
         "weapon_type": "Book",
         "stat_bias": {
+            "str": 0.7,
+            "vit": 0.8,
+            "dex": 1.0,
+            "agi": 0.9,
+            "int_stat": 1.6,
+            "spi": 1.5,
             "mp": 1.8
         },
         "initial_skills": [
-            "basic_fire",
-            "ice_needle",
-            "lightning_bolt"
+            "basic_fire"
         ]
     },
     {
@@ -297,6 +363,12 @@
         "role": "Jack-of-all",
         "weapon_type": "Any",
         "stat_bias": {
+            "str": 1.1,
+            "vit": 1.1,
+            "dex": 1.1,
+            "agi": 1.1,
+            "int_stat": 1.1,
+            "spi": 1.1,
             "hp": 1.2,
             "mp": 1.2
         },

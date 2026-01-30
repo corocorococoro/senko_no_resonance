@@ -17,7 +17,8 @@ export class BattleSolver {
 
         // Mock Logic
         const isResonance = command.isResonance || false;
-        const damage = isResonance ? 500 : 100;
+        // Use real damage if provided, else fallback to mock
+        const damage = command.damage !== undefined ? command.damage : (isResonance ? 500 : 100);
 
         // 2. Build Script
         if (isResonance) {

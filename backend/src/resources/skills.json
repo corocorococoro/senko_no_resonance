@@ -41,6 +41,9 @@
         "mp_cost": 4,
         "bp_cost": 3,
         "target_type": "単体",
+        "inspiration_source": [
+            "basic_slash"
+        ],
         "combo": {
             "send_tags": [
                 "Slash",
@@ -70,6 +73,9 @@
         "mp_cost": 5,
         "bp_cost": 3,
         "target_type": "単体",
+        "inspiration_source": [
+            "basic_slash"
+        ],
         "combo": {
             "send_tags": [
                 "Slash",
@@ -192,6 +198,9 @@
         "mp_cost": 5,
         "bp_cost": 2,
         "target_type": "単体",
+        "inspiration_source": [
+            "basic_trust"
+        ],
         "combo": {
             "send_tags": [
                 "InstantStop",
@@ -281,6 +290,9 @@
         "mp_cost": 10,
         "bp_cost": 7,
         "target_type": "単体",
+        "inspiration_source": [
+            "basic_iai"
+        ],
         "combo": {
             "send_tags": [
                 "DeadStop"
@@ -340,6 +352,9 @@
         "mp_cost": 8,
         "bp_cost": 6,
         "target_type": "単体",
+        "inspiration_source": [
+            "spear_thrust"
+        ],
         "combo": {
             "send_tags": [
                 "Down",
@@ -431,6 +446,9 @@
         "mp_cost": 5,
         "bp_cost": 4,
         "target_type": "単体",
+        "inspiration_source": [
+            "basic_punch"
+        ],
         "combo": {
             "send_tags": [
                 "Spark",
@@ -639,6 +657,9 @@
         "mp_cost": 10,
         "bp_cost": 5,
         "target_type": "全体",
+        "inspiration_source": [
+            "basic_fire"
+        ],
         "combo": {
             "send_tags": [
                 "Hot",

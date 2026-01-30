@@ -77,6 +77,55 @@ const ActiveActionDisplay: React.FC = () => {
 };
 
 
+// Top Center: Glimmer Indicator
+const GlimmerIndicator: React.FC = () => {
+    const active = useGameStore(s => s.glimmerActive);
+
+    if (!active) return null;
+
+    return (
+        <div className="glimmer-overlay">
+            <span className="glimmer-icon">💡</span>
+            <span className="glimmer-text">HIRAMEKI!</span>
+            <style>{`
+                .glimmer-overlay {
+                    position: absolute;
+                    top: 20%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    z-index: 1000;
+                    animation: glimmer-pop 0.5s ease-out forwards;
+                }
+                .glimmer-icon {
+                    font-size: 80px;
+                    filter: drop-shadow(0 0 20px #ffd700);
+                    animation: pulse-bulb 0.5s infinite alternate;
+                }
+                .glimmer-text {
+                    color: #ffd700;
+                    font-size: 32px;
+                    font-weight: bold;
+                    text-shadow: 0 0 10px rgba(0,0,0,0.8);
+                    letter-spacing: 4px;
+                    margin-top: 10px;
+                }
+                @keyframes glimmer-pop {
+                    0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+                    60% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+                    100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+                }
+                @keyframes pulse-bulb {
+                    from { filter: drop-shadow(0 0 10px #ffd700); }
+                    to { filter: drop-shadow(0 0 30px #ffffaa); transform: scale(1.1); }
+                }
+            `}</style>
+        </div>
+    );
+};
+
 // --- Main ---
 export const GameUI: React.FC = () => {
     const phase = useGameStore(s => s.phase);
@@ -103,6 +152,7 @@ export const GameUI: React.FC = () => {
     return (
         <div className="game-ui-overlay" onClick={handleTap}>
             <Header onOpenGrimoire={() => setShowGrimoire(true)} />
+            <GlimmerIndicator />
 
             {/* Battle Layout Layer */}
             <div className="ui-battle-layout">

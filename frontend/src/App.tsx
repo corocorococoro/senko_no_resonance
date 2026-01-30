@@ -122,14 +122,16 @@ function App() {
   const phase = useGameStore(s => s.phase);
   const fetchArts = useGameStore(s => s.fetchArts);
   const fetchParty = useGameStore(s => s.fetchParty);
+  const fetchConstants = useGameStore(s => s.fetchConstants);
 
   const isDataLoaded = useGameStore(s => s.isDataLoaded);
 
   // Init Data
   useEffect(() => {
+    fetchConstants();
     fetchArts();
     fetchParty();
-  }, [fetchArts, fetchParty]);
+  }, [fetchArts, fetchParty, fetchConstants]);
 
   if (!isDataLoaded) {
     return (

@@ -1,0 +1,102 @@
+[
+    {
+        "key": "Greatsword",
+        "name_jp": "大剣",
+        "scaling_stat": "str"
+    },
+    {
+        "key": "Sword",
+        "name_jp": "剣",
+        "scaling_stat": "str"
+    },
+    {
+        "key": "Fist",
+        "name_jp": "拳",
+        "scaling_stat": "str"
+    },
+    {
+        "key": "Sword/Shield",
+        "name_jp": "剣盾",
+        "scaling_stat": "str"
+    },
+    {
+        "key": "Staff",
+        "name_jp": "杖",
+        "scaling_stat": "int_stat"
+    },
+    {
+        "key": "Mace",
+        "name_jp": "棍",
+        "scaling_stat": "spi"
+    },
+    {
+        "key": "Bow",
+        "name_jp": "弓",
+        "scaling_stat": "dex"
+    },
+    {
+        "key": "Katana/Kunai",
+        "name_jp": "刀・苦無",
+        "scaling_stat": "dex"
+    },
+    {
+        "key": "Axe",
+        "name_jp": "斧",
+        "scaling_stat": "str"
+    },
+    {
+        "key": "Katana",
+        "name_jp": "刀",
+        "scaling_stat": "dex"
+    },
+    {
+        "key": "Spear",
+        "name_jp": "槍",
+        "scaling_stat": "str"
+    },
+    {
+        "key": "Talisman",
+        "name_jp": "札",
+        "scaling_stat": "int_stat"
+    },
+    {
+        "key": "Rifle",
+        "name_jp": "銃",
+        "scaling_stat": "dex"
+    },
+    {
+        "key": "Instrument",
+        "name_jp": "楽器",
+        "scaling_stat": "spi"
+    },
+    {
+        "key": "Fan",
+        "name_jp": "扇",
+        "scaling_stat": "agi"
+    },
+    {
+        "key": "Time Piece",
+        "name_jp": "時計",
+        "scaling_stat": "int_stat"
+    },
+    {
+        "key": "Dagger",
+        "name_jp": "短剣",
+        "scaling_stat": "dex"
+    },
+    {
+        "key": "Tool",
+        "name_jp": "道具",
+        "scaling_stat": "dex"
+    },
+    {
+        "key": "Book",
+        "name_jp": "本",
+        "scaling_stat": "int_stat"
+    },
+    {
+        "key": "Any",
+        "name_jp": "その他",
+        "scaling_stat": "str"
+    }
+]
