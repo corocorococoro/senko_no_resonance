@@ -123,11 +123,24 @@ function App() {
   const fetchArts = useGameStore(s => s.fetchArts);
   const fetchParty = useGameStore(s => s.fetchParty);
 
+  const isDataLoaded = useGameStore(s => s.isDataLoaded);
+
   // Init Data
   useEffect(() => {
     fetchArts();
     fetchParty();
   }, [fetchArts, fetchParty]);
+
+  if (!isDataLoaded) {
+    return (
+      <div style={{
+        width: '100vw', height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center',
+        background: '#0a0a10', color: '#0ff', fontFamily: 'monospace'
+      }}>
+        INITIALIZING SYSTEM...
+      </div>
+    );
+  }
 
   return (
     <ErrorBoundary>

@@ -1,0 +1,13 @@
+{
+    "battle": {
+        "initial_bp": 10,
+        "max_bp": 10,
+        "bp_regen_per_turn": 1,
+        "encounter_rate": 0.4
+    },
+    "resonance": {
+        "chain_start_chance": 0.3,
+        "chain_continue_chance": 0.3,
+        "max_chain": 5
+    }
+}

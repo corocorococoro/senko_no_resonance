@@ -123,8 +123,14 @@ export const useBattleLoop = () => {
                     */
 
                     // NEW: Gameplay Logic (Matches gameStore.ts)
-                    // 50% Chains for Balanced Gameplay
-                    if (Math.random() < 0.5) {
+                    // Use External Constants
+                    const { chain_start_chance, chain_continue_chance } = useGameStore.getState().constants.resonance;
+
+                    // Let's rely on store resonanceCount.
+                    const currentCount = useGameStore.getState().resonanceCount;
+                    const activeChance = (currentCount === 0 || currentCount === 1) ? chain_start_chance : chain_continue_chance;
+
+                    if (Math.random() < activeChance) {
                         isResonance = true;
                     }
                 }

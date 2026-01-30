@@ -395,6 +395,18 @@ app.get('/api/encounter', async (req, res) => {
   }
 });
 
+// Game Constants Endpoint
+app.get('/api/constants', (req, res) => {
+  try {
+    const constantsPath = path.join(__dirname, 'resources', 'constants.json');
+    const data = fs.readFileSync(constantsPath, 'utf-8');
+    res.json(JSON.parse(data));
+  } catch (e: any) {
+    console.error("Failed to load constants:", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Backend server listening at http://localhost:${port}`);
 });

@@ -138,6 +138,9 @@ interface GameState {
     activeAttackerId: number | null;
     currentAction: CurrentAction | null;
 
+    // System
+    isDataLoaded: boolean;
+
     // Phase 5: Skills Data
     masterArts: Record<string, Art>;
 
@@ -146,6 +149,21 @@ interface GameState {
         hp: number;
         maxHp: number;
         name: string;
+    };
+
+    // Phase 7: Game Constants
+    constants: {
+        battle: {
+            initial_bp: number;
+            max_bp: number;
+            bp_regen_per_turn: number;
+            encounter_rate: number;
+        };
+        resonance: {
+            chain_start_chance: number;
+            chain_continue_chance: number;
+            max_chain: number;
+        };
     };
 
     // Actions
@@ -206,6 +224,14 @@ export const useGameStore = create<GameState>((set, get) => ({
     activeResonanceName: null,
     activeAttackerId: null,
     currentAction: null, // Initial State
+
+    isDataLoaded: false,
+
+    constants: {
+        battle: { initial_bp: 0, max_bp: 0, bp_regen_per_turn: 0, encounter_rate: 0 },
+        resonance: { chain_start_chance: 0, chain_continue_chance: 0, max_chain: 0 }
+    },
+
     party: [
         {
             id: 1,
@@ -242,9 +268,9 @@ export const useGameStore = create<GameState>((set, get) => ({
 
     // Enemy State
     enemy: {
-        hp: 1000,
-        maxHp: 1000,
-        name: 'Enemy'
+        hp: 0,
+        maxHp: 0,
+        name: ''
     },
 
     fetchArts: async () => {
@@ -288,6 +314,21 @@ export const useGameStore = create<GameState>((set, get) => ({
             });
 
             // get().addLog('System: Skills data loaded v2.');
+
+            // Fetch Constants
+            try {
+                const cRes = await fetch('http://localhost:8080/api/constants');
+                if (cRes.ok) {
+                    const cData = await cRes.json();
+                    set({ constants: cData, isDataLoaded: true });
+                    console.log("Game Constants Loaded:", cData);
+                } else {
+                    console.error("Failed to load constants, using defaults (Zeroed!)");
+                }
+            } catch (e) {
+                console.error('Failed to fetch constants', e);
+            }
+
         } catch (e) {
             console.error('Failed to fetch arts', e);
             // get().addLog('System: Failed to load skills data.');
@@ -346,7 +387,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 
         // 1. Exploration Phase
         if (phase === 'EXPLORATION') {
-            const isBattle = Math.random() < 0.4;
+            const isBattle = Math.random() < get().constants.battle.encounter_rate;
             if (isBattle) {
                 addLog(`Encountered an enemy at Floor ${floor}!`);
                 startBattle();
@@ -390,9 +431,15 @@ export const useGameStore = create<GameState>((set, get) => ({
 
             if (!nextArt) break;
 
-            // Link Check (50% chance for Gameplay Balance)
+            // Link Check
+            const { chain_start_chance, chain_continue_chance } = get().constants.resonance;
+            // const chance = (participants.length === 1) ? chain_start_chance : chain_continue_chance; 
+            // Simplified: logic in registerResonanceChain is cleaner, but hered we are forecasting.
+            // Let's match the logic: 1st link uses start_chance, subsequent use continue_chance.
+
+            const chance = (participants.length === 1) ? chain_start_chance : chain_continue_chance;
             const roll = Math.random();
-            const linkSuccess = roll < 0.5;
+            const linkSuccess = roll < chance;
 
             if (linkSuccess && participants.length < 5) {
                 participants.push(nextMem);
@@ -459,8 +506,9 @@ export const useGameStore = create<GameState>((set, get) => ({
     startBattle: async () => {
         get().initBattleState();
 
-        // Default fallback
-        let enemyData = { hp: 1000, maxHp: 1000, name: 'Enemy' };
+        // Strict Mode: No hardcoded fallback.
+        // If API fails, we start with 0 HP (Instant Win/Bug) to alert dev.
+        let enemyData = { hp: 0, maxHp: 0, name: 'LOADING_ERROR' };
 
         try {
             const currentFloor = get().floor;
@@ -470,9 +518,11 @@ export const useGameStore = create<GameState>((set, get) => ({
                 enemyData = {
                     hp: data.hp,
                     maxHp: data.max_hp,
-                    name: data.name_jp // Using JP name for display
+                    name: data.name_jp
                 };
                 console.log("Encountered:", data);
+            } else {
+                console.error("Encounter API returned error");
             }
         } catch (e) {
             console.error("Failed to fetch enemy encounter", e);
@@ -624,7 +674,8 @@ export const useGameStore = create<GameState>((set, get) => ({
             const s = p.battleState;
 
             // BP
-            const newBp = Math.min(s.bp.max, s.bp.current + s.bp.regen);
+            const regen = get().constants.battle.bp_regen_per_turn;
+            const newBp = Math.min(s.bp.max, s.bp.current + regen);
 
             // CD
             const newCooldowns: Record<string, number> = {};
@@ -709,8 +760,9 @@ export const useGameStore = create<GameState>((set, get) => ({
 
             // Frequency Tuning
             // User feedback: "Too many resonances". We want it to be special.
-            const CHAIN_START_CHANCE = 0.3; // 30% chance to connect 1->2
-            const CHAIN_CONTINUE_CHANCE = 0.5; // 50% chance to keep going
+            const { chain_start_chance, chain_continue_chance, max_chain } = state.constants.resonance;
+            // const CHAIN_START_CHANCE = 0.3; // 30% chance to connect 1->2
+            // const CHAIN_CONTINUE_CHANCE = 0.5; // 50% chance to keep going
 
             if (state.resonanceCount === 0) {
                 // Initial State: First attack
@@ -723,10 +775,10 @@ export const useGameStore = create<GameState>((set, get) => ({
                 // 1. Check Technical Compatibility (Tags, etc - Mocked here as always true for now)
                 // 2. Check Random Chance (The "Wakuwaku" factor)
 
-                const chance = (state.resonanceCount === 1) ? CHAIN_START_CHANCE : CHAIN_CONTINUE_CHANCE;
+                const chance = (state.resonanceCount === 1) ? chain_start_chance : chain_continue_chance;
                 const roll = Math.random();
 
-                const shouldChain = (roll < chance) && (state.resonanceCount < 5);
+                const shouldChain = (roll < chance) && (state.resonanceCount < max_chain);
 
                 if (shouldChain) {
                     isChainSuccess = true;
@@ -819,8 +871,11 @@ export const useGameStore = create<GameState>((set, get) => ({
             const nextArt = masterArts[nextMem.currentArtId];
             if (!nextArt) break;
 
-            // 50% chain chance
-            if (Math.random() < 0.5) {
+            // Dynamic Chain Chance
+            const { chain_start_chance, chain_continue_chance } = get().constants.resonance;
+            const chance = (participants.length === 1) ? chain_start_chance : chain_continue_chance;
+
+            if (Math.random() < chance) {
                 participants.push(nextMem);
             } else {
                 break;
