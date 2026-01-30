@@ -139,7 +139,44 @@ app.post('/api/seed_db', async (req, res) => {
         )
     `);
 
-    // Ensure Jobs Data exists
+    // Create Enemies Table
+    await connection.query(`
+        CREATE TABLE IF NOT EXISTS enemies (
+            id VARCHAR(50) PRIMARY KEY,
+            name_jp VARCHAR(255),
+            name_en VARCHAR(255),
+            level INT,
+            hp INT,
+            max_hp INT,
+            stats JSON,
+            texture_key VARCHAR(50),
+            skills JSON,
+            exp INT,
+            floor_min INT,
+            floor_max INT
+        )
+    `);
+
+    // Ensure Enemies Data exists
+    const [existingEnemies] = await connection.query('SELECT COUNT(*) as count FROM enemies');
+    const enemyCount = (existingEnemies as any[])[0].count;
+
+    if (enemyCount === 0) {
+      console.log('Inserting default enemies from JSON...');
+      const enemiesPath = path.join(__dirname, 'resources', 'enemies.json');
+      const enemiesData = JSON.parse(fs.readFileSync(enemiesPath, 'utf-8'));
+
+      const values = enemiesData.map((e: any) => [
+        e.id, e.name_jp, e.name_en, e.level, e.hp, e.max_hp,
+        JSON.stringify(e.stats), e.texture_key, JSON.stringify(e.skills),
+        e.exp, e.floor_range[0], e.floor_range[1]
+      ]);
+
+      await connection.query(
+        'INSERT INTO enemies (id, name_jp, name_en, level, hp, max_hp, stats, texture_key, skills, exp, floor_min, floor_max) VALUES ?',
+        [values]
+      );
+    }
     const [existingJobs] = await connection.query('SELECT COUNT(*) as count FROM jobs');
     const count = (existingJobs as any[])[0].count;
 
@@ -316,6 +353,45 @@ app.post('/api/seed_db', async (req, res) => {
     console.error(error);
     if (connection) await connection.end().catch(() => { });
     res.status(500).json({ error: error.message });
+  }
+});
+
+// Encounter Endpoint
+app.get('/api/encounter', async (req, res) => {
+  const floor = parseInt(req.query.floor as string) || 1;
+  let connection;
+  try {
+    connection = await mysql.createConnection({
+      host: process.env.DB_HOST || 'db',
+      user: process.env.DB_USER || 'root',
+      password: process.env.DB_PASSWORD || '',
+      port: Number(process.env.DB_PORT) || 4000,
+      database: process.env.DB_DATABASE || 'senko_no_resonance'
+    });
+
+    // Find enemies matching floor range
+    const [rows] = await connection.query(
+      'SELECT * FROM enemies WHERE floor_min <= ? AND floor_max >= ?',
+      [floor, floor]
+    );
+
+    const candidates = rows as any[];
+    if (candidates.length === 0) {
+      // Fallback to any low level enemy
+      const [fallback] = await connection.query('SELECT * FROM enemies ORDER BY level ASC LIMIT 1');
+      res.json((fallback as any[])[0]);
+      return;
+    }
+
+    // Random Pick
+    const pick = candidates[Math.floor(Math.random() * candidates.length)];
+    res.json(pick);
+
+  } catch (e: any) {
+    console.error(e);
+    res.status(500).json({ error: e.message });
+  } finally {
+    if (connection) await connection.end();
   }
 });
 

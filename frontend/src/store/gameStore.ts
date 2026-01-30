@@ -456,12 +456,32 @@ export const useGameStore = create<GameState>((set, get) => ({
         }
     },
 
-    startBattle: () => {
+    startBattle: async () => {
         get().initBattleState();
+
+        // Default fallback
+        let enemyData = { hp: 1000, maxHp: 1000, name: 'Enemy' };
+
+        try {
+            const currentFloor = get().floor;
+            const res = await fetch(`http://localhost:8080/api/encounter?floor=${currentFloor}`);
+            if (res.ok) {
+                const data = await res.json();
+                enemyData = {
+                    hp: data.hp,
+                    maxHp: data.max_hp,
+                    name: data.name_jp // Using JP name for display
+                };
+                console.log("Encountered:", data);
+            }
+        } catch (e) {
+            console.error("Failed to fetch enemy encounter", e);
+        }
+
         set({
             phase: 'BATTLE',
             resonanceCount: 0,
-            enemy: { hp: 1000, maxHp: 1000, name: 'Enemy' }
+            enemy: enemyData
         });
     },
 
